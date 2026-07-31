@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
-# SeedCell pre-push hook: block a push if the food-safety self-tests fail.
-# Enabled via:  git config core.hooksPath .githooks
+# SeedCell pre-push hook: (1) upload Git LFS objects, (2) block a push if the
+# food-safety self-tests fail. Enabled via:  git config core.hooksPath .githooks
+# NOTE: because this repo sets core.hooksPath, Git LFS's own hook in .git/hooks is
+# bypassed, so we invoke `git lfs pre-push` here (it consumes the hook's stdin/args).
 set -euo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+if command -v git-lfs >/dev/null 2>&1; then
+  git lfs pre-push "$@"
+fi
+
 echo "pre-push: running SeedCell food-safety self-tests..."
 if ! "$REPO_ROOT/scripts/run_selftest.sh"; then
   echo "pre-push: BLOCKED -- food-safety self-tests failed. Push aborted." >&2
