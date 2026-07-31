@@ -1,0 +1,50 @@
+# SeedCell licensing
+
+SeedCell is an **open-source hardware research project**. Because it mixes hardware
+designs, written documentation, and software, three different licenses apply depending
+on the type of file. Full texts are in the [`LICENSES/`](LICENSES/) directory.
+
+| Part of the project | Covers | License | SPDX identifier |
+|---------------------|--------|---------|-----------------|
+| **Hardware designs** | `cad/`, `blender/`, `renders/`, and any mechanical geometry, CAD sources, models, or fabrication data | CERN Open Hardware Licence v2 – Strongly Reciprocal | `CERN-OHL-S-2.0` |
+| **Documentation** | `docs/`, `README.md`, ADRs, and all written engineering notes | Creative Commons Attribution 4.0 International | `CC-BY-4.0` |
+| **Software** | `godot/`, `scripts/`, and any source code | Apache License 2.0 | `Apache-2.0` |
+
+Copyright © 2026 Edouard Murat and the SeedCell contributors.
+
+Each license is *reciprocal or attribution-based*: you are free to use, study, modify,
+and redistribute this work — including commercially — provided you keep the attribution
+and, for the hardware and any derivatives, keep those derivatives open under the same
+terms (CERN-OHL-S). This is deliberate: SeedCell is public-good infrastructure, and the
+intent is that improvements stay available to everyone.
+
+If a specific file carries its own SPDX header, that header governs that file.
+
+---
+
+## ⚠️ Safety notice — this is uncertified research, not a deployable product
+
+**SeedCell describes an unattended machine that BAKES AND SERVES FOOD to the public. Built
+or operated incorrectly, it can serve under-cooked or cross-contaminated food and cause
+foodborne illness, and it moves a hot powered piston that can burn or pinch.**
+
+Everything in this repository is **design and first-order simulation only**. As of this
+writing there is **no built hardware, no microbiological validation, and no food-safety
+certification** of any kind. In particular:
+
+- The safety functions (cook-lethality proof, surface sanitation, burn/pinch guard, etc.)
+  exist as analysis and simulation. **None have been tested on real hardware or validated**
+  against a microbiological or HACCP standard.
+- Key parameters (notably food residue/release, the cook F-value target, and the cleaning
+  log-reduction) are **estimated, not measured**, and everything that follows from them is
+  therefore unvalidated.
+
+Do **NOT** build this to serve food to anyone. Any physical build is for **isolated
+bench/engineering testing without serving a person** only. Turning this design into
+anything that safely feeds the public requires measured data, a full food-safety validation
+program (HACCP + local food law), independent review, and formal certification — none of
+which this project has done.
+
+**THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND AND WITHOUT ANY IMPLICATION OF
+FITNESS FOR ANY PURPOSE, AS SET OUT IN THE APPLICABLE LICENCES ABOVE. The authors and
+contributors accept no liability for any use of this material.**

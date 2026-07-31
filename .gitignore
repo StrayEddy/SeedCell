@@ -1,0 +1,30 @@
+# FreeCAD
+*.FCStd1
+*.FCBak
+*.FCStd.lock
+
+# Blender
+*.blend1
+*.blend2
+*.blend3
+
+# Godot 4: ignore only the .godot/ cache; commit *.import and *.uid sidecars
+# (portable, deterministic import settings + stable resource IDs)
+.godot/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS / editor
+.DS_Store
+*~
+.idea/
+.vscode/
+
+# Blender render pipeline: commit the scripts (source of truth), ignore the
+# regenerable/downloaded artifacts.
+/renders/
+/blender/seedcell.blend
+/blender/models/
+/blender/hdri/

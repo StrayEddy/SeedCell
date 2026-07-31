@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SeedCell — autonomous public food infrastructure</title>
+<meta name="description" content="A public, self-cleaning machine that bakes a fresh, nutritious flatbread on demand, so no one goes hungry for lack of money. Open-source hardware research — design + simulation only.">
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c232c; --text:#e6edf3; --muted:#9aa4b2;
+    --border:#232a33; --seed:#3fb950; --warm:#f0a35e; --red:#f85149; --max:960px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  a{color:var(--warm);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 20px}
+  nav{position:sticky;top:0;z-index:10;background:rgba(13,17,23,.85);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--border)}
+  nav .wrap{display:flex;align-items:center;gap:18px;height:56px}
+  nav .brand{font-weight:700;letter-spacing:.5px} nav .brand span{color:var(--seed)}
+  nav .links{display:flex;gap:16px;margin-left:auto;flex-wrap:wrap}
+  nav .links a{color:var(--muted);font-size:14px} nav .links a:hover{color:var(--text)}
+  .cta{background:var(--seed);color:#05220f;padding:7px 12px;border-radius:8px;font-weight:600}
+  header.hero{padding:72px 0 40px;border-bottom:1px solid var(--border);
+    background:radial-gradient(1200px 400px at 70% -10%,rgba(63,185,80,.10),transparent)}
+  .pill{display:inline-block;font-size:12px;color:var(--muted);border:1px solid var(--border);
+    border-radius:999px;padding:4px 10px;margin-bottom:18px}
+  h1{font-size:40px;line-height:1.15;margin:0 0 12px}
+  h1 .k{color:var(--seed)}
+  .tag{font-size:18px;color:var(--muted);max-width:640px}
+  .btns{margin-top:24px;display:flex;gap:12px;flex-wrap:wrap}
+  .btn{border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:var(--text)}
+  .btn.primary{background:var(--warm);color:#2a1602;border-color:var(--warm);font-weight:600}
+  section{padding:48px 0;border-bottom:1px solid var(--border)}
+  h2{font-size:26px;margin:0 0 8px} .lead{color:var(--muted);margin:0 0 24px;max-width:680px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px}
+  .card h3{margin:0 0 6px;font-size:17px} .card p{margin:0;color:var(--muted);font-size:14px}
+  ol.flow{counter-reset:s;list-style:none;padding:0;margin:0}
+  ol.flow li{position:relative;padding:10px 0 10px 40px;border-bottom:1px solid var(--border)}
+  ol.flow li:before{counter-increment:s;content:counter(s);position:absolute;left:0;top:10px;
+    width:26px;height:26px;border-radius:50%;background:var(--panel2);border:1px solid var(--border);
+    color:var(--seed);font-weight:700;text-align:center;line-height:26px;font-size:13px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  td .sf{color:var(--seed);font-weight:600}
+  .note{background:var(--panel);border-left:3px solid var(--warm);border-radius:0 8px 8px 0;
+    padding:14px 16px;color:var(--muted);font-size:14px}
+  .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .t{font-size:12px;color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:2px 8px}
+  code{background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:13px}
+  footer{padding:36px 0;color:var(--muted);font-size:14px}
+  @media(max-width:720px){.grid,.cards{grid-template-columns:1fr}h1{font-size:32px}}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <div class="brand">Seed<span>Cell</span></div>
+  <div class="links">
+    <a href="#what">What</a>
+    <a href="#how">Mechanism</a>
+    <a href="#food">Food</a>
+    <a href="#safety">Safety</a>
+    <a href="#hygiene">Hygiene</a>
+    <a href="#help">Help</a>
+    <a class="cta" href="https://github.com/StrayEddy/SeedCell">GitHub</a>
+  </div>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="pill">Design + simulation · uncertified research · the food sibling of HiveCell</div>
+  <h1>No one should go hungry because they <span class="k">cannot afford food</span>.</h1>
+  <p class="tag">SeedCell is a public, self-cleaning machine that turns long-life dry ingredients
+  into a fresh, warm, nutritious flatbread on demand. Not a vending machine — a <em>food
+  syringe</em>: it briefly opens, delivers food, then cleans itself.</p>
+  <div class="btns">
+    <a class="btn primary" href="#how">How it works</a>
+    <a class="btn" href="#safety">Safety first</a>
+    <a class="btn" href="https://github.com/StrayEddy/SeedCell">Read the source</a>
+  </div>
+</div></header>
+
+<section id="what"><div class="wrap">
+  <h2>A guaranteed daily ration, not a restaurant</h2>
+  <p class="lead">SeedCell guarantees basic nutrition: warm, cheap, portable, eaten by hand,
+  no packaging, almost no residue. Think of it as a daily survival ration. It is designed
+  around the same priorities as HiveCell — self-cleaning, vandal resistance, reliability, low
+  maintenance, long lifespan, public accessibility — with food safety on top.</p>
+  <div class="cards">
+    <div class="card"><h3>Fresh, not stored</h3><p>Dry ingredients are baked to order — no
+      perishable stock, no packaging, no fridge to clean.</p></div>
+    <div class="card"><h3>One moving part</h3><p>A single heated piston in a fixed bore does
+      the forming, cooking, delivery, and cleaning.</p></div>
+    <div class="card"><h3>Minimal contact</h3><p>The whole food path is one chamber, one
+      transfer, one delivery surface. Everything else stays dry.</p></div>
+  </div>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <h2>The hot syringe</h2>
+  <p class="lead">The engineering goal is not making food — it is <strong>minimizing
+  food-contact surfaces</strong>. A single heated piston moves inside a fixed heated bore and
+  does every job in turn.</p>
+  <div class="grid">
+    <ol class="flow">
+      <li>User approaches; a privacy-preserving ration check (no fingerprint, no database).</li>
+      <li>The piston retracts, opening a short cook chamber in the bore.</li>
+      <li>Dry blend is metered in; water jets hydrate and mix it — <em>no blade</em>.</li>
+      <li>The piston presses the dough; two hot faces conduction-bake the flatbread.</li>
+      <li>The cook kill-step is <em>proven</em> — or the batch is diverted to waste.</li>
+      <li>The piston ejects the flatbread through the mouth die; the user takes it.</li>
+      <li>The piston parks deep and self-cleans: scrape · steam · heat-sterilize · dry.</li>
+      <li>The face returns flush — the machine is a plain wall again.</li>
+    </ol>
+    <div>
+      <div class="note"><strong>Why a syringe?</strong> Fewest moving parts → best reliability,
+      cost, and simplicity. A round bore has no internal corners, so a single circular lip
+      wipes the entire food-contact surface every stroke. The piston face is the flush wall,
+      the cook platen, the delivery surface, and the cleaning interface — all at once.</div>
+      <div class="tags">
+        <span class="t">ADR-0001 hot syringe</span>
+        <span class="t">ADR-0006 jet hydration</span>
+        <span class="t">ADR-0007 conduction bake</span>
+        <span class="t">ADR-0010 self-cleaning</span>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section id="food"><div class="wrap">
+  <h2>Fortified protein flatbread</h2>
+  <p class="lead">Whole-wheat, chickpea and lentil flour, a little oil, salt, water, and a
+  micronutrient premix — a balanced ration, cheap and complete. First-order model
+  (<code>scripts/dosing.py</code>):</p>
+  <table>
+    <tr><th>Metric</th><th>Target</th><th>Model</th></tr>
+    <tr><td>Energy</td><td>500–700 kcal</td><td>~571 kcal</td></tr>
+    <tr><td>Protein</td><td>20–30 g</td><td>~26 g</td></tr>
+    <tr><td>Ingredient cost</td><td>$0.15–0.25</td><td>~$0.21 / serving</td></tr>
+    <tr><td>Cook energy</td><td>low</td><td>~59 Wh / serving</td></tr>
+  </table>
+  <p class="note">The food is designed to <strong>release cleanly</strong>: a low-adhesion
+  surface, a sacrificial dry-flour boundary layer that bakes into the crust and leaves with
+  the bread, and a lean formula that shrinks and self-releases. The best way to clean a
+  surface is to never let food stick to it (ADR-0008).</p>
+</div></section>
+
+<section id="safety"><div class="wrap">
+  <h2>Safety is the whole problem</h2>
+  <p class="lead">SeedCell makes food for vulnerable people, unattended, for years. The core
+  invariant is non-negotiable: <strong>a batch that is not provably cooked and served on a
+  provably clean surface is diverted to waste — never to a person.</strong> Enforced by a
+  headless self-test on every push.</p>
+  <table>
+    <tr><th>Function</th><th>What it does</th><th>Status</th></tr>
+    <tr><td><span class="sf">SF1</span> Cook lethality</td><td>Diverse-redundant, fail-safe proof of the pathogen kill-step before any serving; divert on doubt.</td><td>[sim]</td></tr>
+    <tr><td><span class="sf">SF2</span> Surface sanitation</td><td>Scrape + steam + reused-heat sterilize + dry, verified every cycle or lock out.</td><td>[sim/decision]</td></tr>
+    <tr><td><span class="sf">SF3</span> Contamination barrier</td><td>Circular scraper lips wipe the full bore each stroke; separate public/service sides.</td><td>[cad]</td></tr>
+    <tr><td><span class="sf">SF4</span> Burn + pinch guard</td><td>Touch-safe surface + mouth force cap; abort the delivery on a hand or a scald.</td><td>[sim]</td></tr>
+    <tr><td><span class="sf">SF5</span> Motion signalling</td><td>Status beacon + soft-start/stop + slow final approach (shared with HiveCell).</td><td>[sim]</td></tr>
+    <tr><td><span class="sf">SF6</span> Ingredient integrity</td><td>Dry-storage moisture/temperature lockout; refuse a spoiled hopper.</td><td>[decision]</td></tr>
+  </table>
+</div></section>
+
+<section id="hygiene"><div class="wrap">
+  <h2>Clean for the next person</h2>
+  <p class="lead">Because the food is designed to leave and the contact area is tiny, most
+  sanitation is mechanical + thermal — and nearly free.</p>
+  <div class="cards">
+    <div class="card"><h3>Scrape</h3><p>The piston's own lips wipe the whole bore perimeter as
+      it retracts — the syringe-native squeegee.</p></div>
+    <div class="card"><h3>Steam + heat</h3><p>A steam ring sanitizes; the surfaces are already
+      ~230 °C from the bake, so dry-heat sterilization is essentially free.</p></div>
+    <div class="card"><h3>No chemicals (if it holds)</h3><p>Thermal + steam should suffice for
+      cooked-starch residue — pending the bench measurement that decides it.</p></div>
+  </div>
+  <p class="note"><strong>Biggest open risk.</strong> Food residue + release is the master
+  variable — it decides whether the machine can be chemical-free and self-cleaning at all, yet
+  is only estimated across a ~1000× range. It must be measured on a real baked coupon
+  (<code>docs/residue_bench_test.md</code>) — the highest-value next experiment and the best
+  first contribution.</p>
+</div></section>
+
+<section id="help"><div class="wrap">
+  <h2>Built in the open — how to help</h2>
+  <p class="lead">SeedCell is open-source hardware research (FreeCAD · Godot · Blender). The
+  most valuable contributions right now are physical de-risking, not more CAD.</p>
+  <div class="cards">
+    <div class="card"><h3>Measure the residue</h3><p>~$150–250 of kitchen gear to measure
+      SeedCell's master variable on a baked coupon (ADR-0011).</p></div>
+    <div class="card"><h3>Prove the clean</h3><p>The hardest open problem: a sensor that
+      proves a food surface is clean, every cycle, unattended (SF2).</p></div>
+    <div class="card"><h3>Nail the lethality</h3><p>Set the real cook F-value target for a
+      low-moisture legume flatbread (SF1).</p></div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <p><strong>Uncertified research — do not build this to feed anyone.</strong> Design +
+  first-order simulation only; no built hardware, no microbiological validation, no
+  food-safety certification.</p>
+  <p>Licensed by medium: hardware CERN-OHL-S-2.0 · docs CC-BY-4.0 · software Apache-2.0.
+  © 2026 Edouard Murat and the SeedCell contributors ·
+  <a href="https://github.com/StrayEddy/SeedCell">github.com/StrayEddy/SeedCell</a></p>
+</div></footer>
+
+</body>
+</html>
