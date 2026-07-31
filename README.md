@@ -1,5 +1,7 @@
 # SeedCell
 
+**🌐 Project site: [strayeddy.github.io/SeedCell](https://strayeddy.github.io/SeedCell/)**
+
 **Autonomous public food infrastructure — the food sibling of [HiveCell](../HiveCell).**
 
 > **Open-source hardware research — uncertified, not a deployable product.**
