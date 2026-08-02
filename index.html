@@ -33,6 +33,11 @@
   .btns{margin-top:24px;display:flex;gap:12px;flex-wrap:wrap}
   .btn{border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:var(--text)}
   .btn.primary{background:var(--warm);color:#2a1602;border-color:var(--warm);font-weight:600}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+  .hero-media{position:relative}
+  .hero-media img{width:100%;height:auto;display:block;border:1px solid var(--border);
+    border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+  .hero-media figcaption{margin:10px 2px 0;color:var(--muted);font-size:12.5px}
   section{padding:48px 0;border-bottom:1px solid var(--border)}
   h2{font-size:26px;margin:0 0 8px} .lead{color:var(--muted);margin:0 0 24px;max-width:680px}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
@@ -54,7 +59,7 @@
   .t{font-size:12px;color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:2px 8px}
   code{background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:13px}
   footer{padding:36px 0;color:var(--muted);font-size:14px}
-  @media(max-width:720px){.grid,.cards{grid-template-columns:1fr}h1{font-size:32px}}
+  @media(max-width:720px){.grid,.cards,.hero-grid{grid-template-columns:1fr}h1{font-size:32px}}
 </style>
 </head>
 <body>
@@ -73,15 +78,24 @@
 </div></nav>
 
 <header class="hero"><div class="wrap">
-  <div class="pill">Design + simulation · uncertified research · the food sibling of HiveCell</div>
-  <h1>No one should go hungry because they <span class="k">cannot afford food</span>.</h1>
-  <p class="tag">SeedCell is a public, self-cleaning machine that turns long-life dry ingredients
-  into a fresh, warm, nutritious flatbread on demand. Not a vending machine — a <em>food
-  syringe</em>: it briefly opens, delivers food, then cleans itself.</p>
-  <div class="btns">
-    <a class="btn primary" href="#how">How it works</a>
-    <a class="btn" href="#safety">Safety first</a>
-    <a class="btn" href="https://github.com/StrayEddy/SeedCell">Read the source</a>
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <div class="pill">Design + simulation · uncertified research · the food sibling of HiveCell</div>
+      <h1>No one should go hungry because they <span class="k">cannot afford food</span>.</h1>
+      <p class="tag">SeedCell is a public, self-cleaning machine that turns long-life dry ingredients
+      into a fresh, warm, nutritious flatbread on demand. Not a vending machine — a <em>food
+      syringe</em>: it briefly opens, delivers food, then cleans itself.</p>
+      <div class="btns">
+        <a class="btn primary" href="#how">How it works</a>
+        <a class="btn" href="#safety">Safety first</a>
+        <a class="btn" href="https://github.com/StrayEddy/SeedCell">Read the source</a>
+      </div>
+    </div>
+    <figure class="hero-media">
+      <img src="assets/hero.png" width="1600" height="1000"
+        alt="SeedCell's delivery mouth: a fresh, warm flatbread presented in the stainless mouth die, recessed into a flush armored public wall.">
+      <figcaption>The delivery moment — a fresh flatbread in the mouth die. Blender render from the FreeCAD model.</figcaption>
+    </figure>
   </div>
 </div></header>
 
