@@ -30,6 +30,7 @@ Risk = Severity (1-4) × Likelihood (1-4). Severity 4 = serious/widespread illne
 | H7 | Cleaning-chemical residue on food surface | A disinfectant (if used) left on the piston face | 4 | 1 | 4 | ADR-0010 thermal+steam, NO per-cycle chemical; if added, a dose+rinse verify + fail-safe |
 | H8 | Foreign body from mechanism wear | Coating flake / seal fragment ends up in the bread | 3 | 2 | 6 | Food-grade materials; SF3 wear budget; inspection; frangible-part exclusion from food path |
 | H9 | Allergen exposure | Wheat/legume allergens inherent to the formula | 3 | 3 | 9 | Clear fixed labelling at the machine; formula is fixed + published (facility-level) |
+| H10 | Spore outgrowth in a held batch | *B. cereus* spores survive the bake (H1's kill-step cannot reach them) and outgrow while a finished batch waits; the emetic toxin is heat-stable, so no later heating can fix it | 4 | 2 | 8 | SF7 bake→serve hold budget, temperature-gated, divert on timeout (ADR-0016) |
 
 ## Safety functions
 Status: **[sim]** = logic implemented and machine-checked in the digital twin — NOT rated
@@ -67,6 +68,14 @@ hardware, no performance-level claim yet. **[decision]** = chosen, not yet imple
 - **SF6 Ingredient integrity / spoilage lockout** — *[decision]* hopper moisture + temperature
   monitoring refuses to charge from a wet/spoiled hopper (H3), fail-safe like an SF1 sensor
   fault. Dry storage (ADR-0012) makes spoilage unlikely; the lockout catches seal failure.
+- **SF7 Bake→serve hold (primary, spore control)** — *[sim: gate logic]* SF1 proves the batch
+  was *cooked*; SF7 proves it has not since sat long enough for the ***B. cereus* spores that
+  survived that cook** to outgrow. Their toxin is heat-stable, so this is the one food hazard
+  that no amount of heat can fix after the fact — the control is **time**. A temperature-gated
+  clock accrues only sub-60 °C time from end-of-bake; past the budget (default **15 min**,
+  a facility-level parameter) the batch is diverted to waste, never served. A dead thermometer
+  accrues risk rather than pausing the clock. **ADR-0016** / `godot/spore_hold.gd`. Does *not*
+  cover a batch left uncollected at the mouth — that needs a collection sensor (open item).
 
 ## FMEA — under-cook / cross-contamination chain (basis for the SF1/SF2 decisions)
 Component-level companion to the hazard register: how the cook/clean path can fail and what
@@ -104,13 +113,20 @@ and is regression-checked; it is NOT rated hardware and makes no performance-lev
   un-sanitizable → LOCKOUT, and mouth-guard abort. Runs on every push via `.githooks/pre-push`.
 - `godot/tests/test_cook_lethality.gd` — fault-injects each channel/mode, checks staleness,
   and exhaustively verifies the vote invariant across all 3⁴ combinations.
+- `godot/lethality_model.gd` (+ `test_lethality_model.gd`) — the SF1 kill-step TARGET
+  (ADR-0015): F₇₀ ≥ 13.9 s, 7-log *Salmonella*, checked against the FDA Food Code rows it is
+  fitted to, plus the integrator's floor / fault-latch / per-batch behaviour.
+- `godot/spore_hold.gd` (+ `test_spore_hold.gd`) — SF7 bake→serve hold (ADR-0016): only
+  sub-60 °C time accrues, a dead sensor accrues rather than pauses, an over-held batch is
+  diverted and never served, and every batch is accounted for as served or wasted.
 - `godot/soft_profile.gd` (+ `test_soft_profile.gd`) — SF5 soft motion profile, shared with HiveCell.
 - `scripts/build_model.py` — SF3 scraper lips (2 circular rings) + the minimal food-contact
   geometry; `scripts/residue.py` brackets the master residue/release variable (ADR-0011);
   `scripts/cook_energy.py` checks SF1 cook time/lethality/energy; `scripts/actuator_sizing.py`
   budgets the piston force (dough forming dominates).
 
-Addressed in sim: H1 by SF1 (+ fail-safe divert), H2 by SF2 + ADR-0008 (residue TBV by test),
+Addressed in sim: H1 by SF1 (+ fail-safe divert), H10 by SF7 (hold budget + divert-on-timeout),
+H2 by SF2 + ADR-0008 (residue TBV by test),
 H4/H5 by SF4 abort logic, H3 by SF6 (decision), H7 designed out by ADR-0010. H6/H8/H9 are
 facility/material/label items below.
 
@@ -137,12 +153,11 @@ does not choose them.
   read the true geometric **coldest point** (get this wrong and the integral measures the
   wrong place); run a challenge study on the real product; build the integrity dossier for
   the safety controller.
-- **Bacillus cereus spores (H-new, ADR-0015):** endemic to cereal/legume flours and **not
-  killed by the bake** — spore D-values are minutes at retort temperature, so no F-value the
-  SF1 channel can accumulate touches them. The control is **time, not heat**: serve
-  immediately, never hold a baked batch warm, and discard rather than re-warm. Needs an
-  explicit maximum bake→serve interval and a divert-on-timeout rule in the interlock; not
-  yet implemented.
+- **Bacillus cereus spores (SF7, ADR-0016):** the control is implemented — a temperature-gated
+  bake→serve budget with divert-on-timeout (`godot/spore_hold.gd`). What remains: confirm the
+  15-minute default against a challenge study on the real product, and close the **uncollected
+  batch** case — a serving left presented at the mouth is currently outside the guard, and
+  needs a collection sensor plus an `AWAIT_COLLECT` state in the interlock.
 - **SF2 clean verification (ADR-0010):** the hardest open problem — an unattended, reliable
   *sensor* that proves a food surface is clean (residue below a safe threshold) every cycle.
   Bench the thermal+steam+scrape log-reduction; decide go/no-go on avoiding chemicals.

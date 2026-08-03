@@ -36,6 +36,12 @@ var profile := SoftProfile.new()    # SF5 soft velocity profile (shapes the pres
 ## The twin/real line attaches a real probe suite.
 var lethality: CookLethality = null
 
+## SF7 bake->serve hold guard (ADR-0016) -- the B. cereus spore control. SF1 proves the
+## batch was COOKED; this proves it has not since sat around long enough for the spores
+## that survived that cook to outgrow. Always present (unlike `lethality`), because it
+## needs no hardware beyond a thermometer the burn guard already requires.
+var spore_hold := SporeHold.new()
+
 # --- tuning (short in tests, realistic in the twin) ---
 var charge_seconds := 3.0
 var hydrate_seconds := 2.0
@@ -52,6 +58,10 @@ var sensor_fault := false       ## a faulted/unknown sensor anywhere safety-rele
 var surface_sanitized := true   ## SF2: post-clean verification reads the surfaces clean
 var surface_touch_safe := true  ## SF4: delivered surface temp is safe to touch (burn guard)
 var contact_over_limit := false ## SF4: measured mouth force over the safe cap (pinch/jam)
+var batch_temp_c := 95.0        ## SF7: the batch's current temperature, post-bake. Drives
+                                ## the spore-hold clock, which only runs below 60 C. The
+                                ## twin/real line feeds the delivered-surface thermometer
+                                ## the burn guard already needs; tests drive it directly.
 
 # --- state ---
 var state: int = State.IDLE
@@ -62,6 +72,11 @@ var reclean_count := 0          ## consecutive failed clean-verifies
 var served := 0                 ## flatbreads delivered to a person (safe path liveness)
 var wasted := 0                 ## batches diverted to waste (never served)
 var _batch_lethal := false      ## did the batch currently in the machine pass its kill-step?
+var _batch_condemned := false   ## an abort mid-delivery marked this batch for waste. Set on
+                                ## an SF4 mouth abort or an SF7 hold expiry, consumed at the
+                                ## end of RETRACT, which then routes to DIVERT instead of
+                                ## CLEAN so the batch is counted as wasted rather than
+                                ## silently scraped away by the next clean cycle.
 
 
 ## Fail-safe cook check: the kill-step must be POSITIVELY proven. A fault, a stale
@@ -73,6 +88,14 @@ func cook_lethal() -> bool:
 	if lethality != null:
 		return not lethality.unsafe()
 	return cook_ok
+
+
+## SF7 gate: has this batch been cool for too long to hand over? (ADR-0016)
+## Fail-safe like every other gate here -- an unarmed or unprovable guard reads "no".
+func hold_ok() -> bool:
+	if sensor_fault:
+		return false
+	return spore_hold.servable()
 
 
 ## SF4 gate for opening the mouth to a person: no pinch/jam and nothing too hot to touch.
@@ -106,6 +129,10 @@ func step(delta: float) -> void:
 	t += delta
 	if lethality != null:
 		lethality.tick(delta)   # age the probe channels; unrefreshed => stale => unsafe
+	# SF7: risk time accrues from end-of-cook onward, wherever the batch happens to be.
+	# Deliberately ticked before the state machine runs, so a batch cannot slip through a
+	# gate on a clock that had not yet been advanced this frame.
+	spore_hold.tick(delta, batch_temp_c)
 	match state:
 		State.IDLE:
 			progress = 0.0
@@ -121,6 +148,8 @@ func step(delta: float) -> void:
 			else:
 				sanitized = false          # surfaces are about to get dirty
 				_batch_lethal = false
+				_batch_condemned = false
+				spore_hold.reset()         # never inherit the last batch's clock
 				_goto(State.CHARGE)
 		State.CHARGE:
 			if t >= charge_seconds:
@@ -130,11 +159,17 @@ func step(delta: float) -> void:
 				_goto(State.COOK)
 		State.COOK:
 			if t >= cook_seconds:
+				# End of bake: the batch is now food that can spoil. Start SF7's clock
+				# here, not at PRESENT -- the risk accrues while it waits, wherever it
+				# waits, including through an abort/retry that never reaches the mouth.
+				spore_hold.start_hold()
 				_goto(State.LETHALITY_CHECK)
 		State.LETHALITY_CHECK:
-			# THE food-safety gate. Serve only a provably-cooked batch; otherwise the
-			# batch goes to waste. There is no "serve it anyway" branch.
-			if cook_lethal():
+			# THE food-safety gate. Serve only a batch that is provably cooked (SF1)
+			# AND has not since been held long enough for surviving spores to outgrow
+			# (SF7, ADR-0016). Otherwise the batch goes to waste. There is no
+			# "serve it anyway" branch.
+			if cook_lethal() and hold_ok():
 				_batch_lethal = true
 				_goto(State.PRESENT)
 			else:
@@ -143,13 +178,18 @@ func step(delta: float) -> void:
 			# Reachable only via a passed LETHALITY_CHECK, on sanitized surfaces. If the
 			# mouth becomes unsafe (pinch or too-hot surface), abort the delivery and
 			# retract -- never push through a hand or serve a burn.
-			if not mouth_safe():
+			if not mouth_safe() or not hold_ok():
+				# Abort the delivery. Either way the batch is condemned: it is half out
+				# of a machine that just decided it must not be handed over, so it goes
+				# to waste rather than back into service.
+				_batch_condemned = true
 				_goto(State.RETRACT)
 			else:
 				progress = profile.advance(progress, delta, stroke_seconds)
 				if progress >= 1.0:
 					served += 1
 					request = false
+					spore_hold.reset()     # batch has left the machine
 					_goto(State.RETRACT)
 		State.RETRACT:
 			# Withdraw toward flush: advance (1-progress) from wherever we are toward 1,
@@ -158,7 +198,9 @@ func step(delta: float) -> void:
 			progress = clampf(1.0 - back, 0.0, 1.0)
 			if progress <= 0.001:
 				progress = 0.0
-				_goto(State.CLEAN)
+				# An aborted batch is counted as waste, not quietly scraped away by the
+				# next clean cycle: served + wasted must account for every batch made.
+				_goto(State.DIVERT if _batch_condemned else State.CLEAN)
 		State.CLEAN:
 			# Scrape + steam + heat-sterilize + dry the small food-contact area.
 			if t >= clean_seconds:
@@ -180,6 +222,8 @@ func step(delta: float) -> void:
 			wasted += 1
 			request = false
 			_batch_lethal = false
+			_batch_condemned = false
+			spore_hold.reset()
 			_goto(State.CLEAN)
 		State.LOCKOUT:
 			# Out of service. Recover only when a clean verification passes again

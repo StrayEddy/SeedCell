@@ -480,6 +480,74 @@ water, conservative but unmeasured. Asserted by `godot/tests/test_lethality_mode
 
 ---
 
+## ADR-0016 — SF7 bake→serve hold: *Bacillus cereus* is controlled by time, not heat
+**Date:** 2026-08-03
+**Status:** Accepted (control + logic); the hold budget is a facility-level parameter
+
+**Context.** ADR-0015 set the SF1 kill-step and, in the same breath, named the hazard it
+cannot reach. *B. cereus* is endemic to cereal and legume flours; its **spores survive any
+bake this machine can perform** (spore D-values are minutes at retort temperature, against
+a bake measured in seconds), so no accumulated F-value touches them. Worse, the emetic
+toxin (cereulide) is **heat-stable** — once it has been produced, re-baking cannot undo it.
+A machine that proved lethality perfectly and then let the bread sit would still make
+people ill, and SF1 would report everything was fine.
+
+**Decision.**
+1. **The control is time, not heat.** A batch has a bounded budget between end-of-bake and
+   collection; past it, it is waste. `godot/spore_hold.gd`, gate in `process_interlock.gd`.
+2. **The clock is temperature-gated, not wall-clock.** Only time spent **below 60 °C**
+   accrues. Above that, outgrowth is suppressed and the batch ages for free.
+3. **60 °C is deliberately the same number as `LethalityModel.T_FLOOR`** — one threshold
+   for "where biology stops", used as a floor for lethality credit in ADR-0015 and as a
+   ceiling for risk accrual here. It also sits at the top of the conventional hot-hold
+   band (57–60 °C), so it is defensible from both directions.
+4. **Default budget 15 minutes** (`DEFAULT_MAX_HOLD_S = 900`), far tighter than the
+   4-hour regulatory ceiling for time-as-a-public-health-control. **This is a
+   facility-level parameter** in the same class as the formula and the ration policy: the
+   device enforces it, it does not choose it.
+5. **A dead thermometer accrues risk time rather than pausing the clock**, and latches the
+   batch unprovable.
+6. **The clock starts at end-of-cook, not at PRESENT** — risk accrues wherever the batch
+   waits, including through an abort that never reaches the mouth.
+
+**Why 15 minutes and not 4 hours.** SeedCell bakes **on demand**: the nominal bake→collect
+interval is on the order of ten seconds, so 15 minutes is already ~90× the normal case. A
+batch that exceeds it has not been *waiting*, it has been **stuck** — a jam, an aborted
+delivery, a slow clean — and a stuck batch is precisely the one that must never be handed
+to anyone. Spending the regulatory maximum here would buy nothing operationally and give
+away the entire safety margin.
+
+**Why a dead sensor must not pause the clock (5).** The intuitive failure handling — "no
+reading, don't accrue" — is exactly backwards. A failed thermometer is *correlated* with a
+machine that has stopped attending to the batch, so it is the moment a batch is most likely
+to be sitting forgotten. Pausing the clock there would grant unlimited holding time in
+precisely the fault where it is least deserved.
+
+**Consequential fix.** Wiring the gate exposed an accounting gap that predates it: an abort
+mid-delivery (SF4 pinch/burn trip) fell through `RETRACT → CLEAN` and was silently scraped
+away, counted as neither served nor wasted. Both abort paths now condemn the batch and
+route through `DIVERT`, so **served + wasted accounts for every batch made**. Asserted by
+`tests/test_spore_hold.gd` scenario S6.
+
+**Rejected alternatives.**
+- *Wall-clock timer from end-of-bake*: condemns a batch still sitting hot in the bore, and
+  gives a fast-cooling batch the same budget as one held hot. Wrong physics, both ways.
+- *Rely on the SF1 kill-step*: cannot work — spores survive it by orders of magnitude.
+- *Re-bake a held batch instead of discarding it*: cereulide is heat-stable; a re-bake
+  sterilises the evidence, not the toxin.
+- *Hot-hold indefinitely above 60 °C*: technically suppresses outgrowth, but bakes the
+  product to leather and burns standby energy for a machine whose whole premise is
+  on-demand. The bounded budget is cheaper and simpler.
+
+**Accepted costs / to verify.** The budget is a policy number, not a measured one — a
+challenge study on the real product should confirm 15 min at ambient is comfortably inside
+the safe envelope. The guard needs a batch thermometer; it reuses the delivered-surface
+sensor the SF4 burn guard already requires, so no new hardware. **Not covered:** an
+uncollected batch left presented at the mouth — that needs a collection sensor and an
+`AWAIT_COLLECT` state, which is separate work (ROADMAP).
+
+---
+
 ## Component tree (one cell) — reference for ADR-0001
 
 1. Structure/enclosure: fixed heated `CookBarrel` (bore), wall-interface flange & trim,

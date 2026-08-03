@@ -10,7 +10,7 @@ state belongs in GitHub Issues once the repo is public.
 |---|------|------|-----|
 | 1 | Residue + release bench test | food/hygiene | The master variable (ADR-0011); gates SF2, SF3, the surface + formula. See below. |
 | 2 | Clean-verify sensor survey | sensing | The hardest open problem: prove a food surface is clean, every cycle, unattended (SF2). |
-| 3 | Bake→serve timeout for *B. cereus* spores | food-safety | Fell out of ADR-0015: spores survive the bake, so the control is time, not heat. The interlock needs a max hold interval + divert-on-timeout. |
+| 3 | Uncollected-batch handling (collection sensor + `AWAIT_COLLECT`) | food-safety | The gap ADR-0016 left open: SF7 guards the bake→collect interval, but a serving left sitting at the mouth is outside it. |
 
 ## Next (medium priority)
 | # | Item | Area | Why |
@@ -25,7 +25,13 @@ state belongs in GitHub Issues once the repo is public.
   seconds, 7-log *Salmonella*, z = 6.29 °C fitted to the FDA Food Code table; replaces the
   placeholder 75 °C core assumption. `godot/lethality_model.gd` + `tests/test_lethality_model.gd`.
   Note what this did *not* close: probe parts, coldest-point validation and a challenge study
-  are still gated hardware work (items 10/11 below), and it surfaced a new hazard (Now #3).
+  are still gated hardware work (items 10/11 below), and it surfaced a new hazard — closed below.
+- **SF7 bake→serve hold** (was Now #3) — **ADR-0016**, 2026-08-03. *B. cereus* spores survive
+  the bake and their toxin is heat-stable, so the control is time: a temperature-gated clock
+  accruing only sub-60 °C time, 15-minute default budget, divert-on-timeout.
+  `godot/spore_hold.gd` + `tests/test_spore_hold.gd`. Also closed a pre-existing accounting
+  gap — a delivery aborted mid-stroke was counted as neither served nor wasted.
+  Still open: the uncollected-batch case, now Now #3.
 
 ## Critical-path experiment (not desk work)
 **Residue + release is SeedCell's master variable** — the food equivalent of HiveCell's
