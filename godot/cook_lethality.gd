@@ -42,6 +42,12 @@ class Channel:
 
 var channels: Array[Channel] = []
 
+## SF1 kill-step model (ADR-0015). While null, the `ft_integrator` channel is driven by
+## hand -- which is what the pure-logic voting tests do. Once integrate() is called, that
+## channel stops being an opinion and becomes a measured F-value: it confirms only when
+## the accumulated lethality clears LethalityModel.f_target().
+var integrator: LethalityModel.Integrator = null
+
 
 func _init() -> void:
 	# Diverse physics so no single common cause blinds the kill-step:
@@ -85,6 +91,48 @@ func refresh(n: String) -> void:
 	var c := get_channel(n)
 	if c != null:
 		c.age = 0.0
+
+
+## Feed the batch's COLDEST-POINT core temperature to the F-value channel (ADR-0015).
+## Pass the lowest of the core probes, never a mean and never the platen: lethality is
+## only proven where the batch is coldest. Drives `ft_integrator` from real physics --
+## confirmed when F clears the target, implausible (=> FAULT => unsafe) if any sample in
+## this batch was out of band.
+func integrate(coldest_core_c: float, dt: float) -> void:
+	if integrator == null:
+		integrator = LethalityModel.Integrator.new()
+	integrator.accumulate(coldest_core_c, dt)
+	var c := get_channel("ft_integrator")
+	if c != null:
+		c.confirmed = integrator.reached()
+		c.plausible = not integrator.suspect
+		c.age = 0.0
+
+
+## Lowest reading among the core probes -- the coldest point as measured. Returns NAN for
+## an empty set, which integrate() then treats as an implausible sample (fail-safe).
+static func coldest(core_temps: Array) -> float:
+	if core_temps.is_empty():
+		return NAN
+	var lo: float = INF
+	for t in core_temps:
+		lo = min(lo, float(t))
+	return lo
+
+
+## Start a new batch: banked lethality is per-batch and is NEVER carried across one.
+## The channel is dropped back to "not cooked" in the same breath.
+func new_batch() -> void:
+	if integrator != null:
+		integrator.reset()
+	var c := get_channel("ft_integrator")
+	if c != null:
+		c.confirmed = false
+
+
+## Accumulated equivalent seconds at the reference temperature, for telemetry/UI.
+func f_value() -> float:
+	return integrator.f_value if integrator != null else 0.0
 
 
 ## Runtime self-test: exhaustively drive every channel's vote and assert the two

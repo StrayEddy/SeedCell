@@ -40,8 +40,12 @@ hardware, no performance-level claim yet. **[decision]** = chosen, not yet imple
   prove an accumulated time-temperature lethality (F-value) before it may be presented.
   Diverse-redundant channels (2× core thermocouple + IR surface pyrometer + independent
   F-value integrator), AND-toward-safe, fault-is-unsafe. Fault or unproven ⇒ divert to waste.
-  Architecture + logic in **ADR-0009** / `godot/cook_lethality.gd`; probe parts + F-value
-  target + validation TBD. This is the food analog of HiveCell's SF1 occupancy detection.
+  Architecture + logic in **ADR-0009** / `godot/cook_lethality.gd`. The target is now set
+  (**ADR-0015**): **F₇₀ ≥ 13.9 equivalent seconds, z = 6.29 °C** — a 7-log *Salmonella*
+  reduction fitted to the FDA Food Code 3-401.11 table, integrated from the **coldest**
+  core probe, with no credit below 60 °C and no carry-over between batches
+  (`godot/lethality_model.gd`). Probe parts, coldest-point placement and challenge-study
+  validation remain TBD. This is the food analog of HiveCell's SF1 occupancy detection.
 - **SF2 Surface sanitation (primary)** — *[sim + decision]* the food-contact surfaces (bore +
   piston face) must be scraped, sanitized, and verified clean after every serving before the
   next charge. Unverified ⇒ re-clean; repeated failure ⇒ LOCKOUT (no service). Method in
@@ -128,9 +132,17 @@ of the SF2 clean-verify (F5) is a commissioning requirement.
 does not choose them.
 
 ## Open items
-- **SF1 real sensing (ADR-0009):** choose probe parts; set the F-value target from a real
-  pathogen-lethality model for a low-moisture legume flatbread (not a guessed 75 °C); validate
-  the coldest-point reading; build the integrity dossier for the safety controller.
+- **SF1 real sensing (ADR-0009/0015):** the F-value target is set (F₇₀ ≥ 13.9 s, 7-log
+  *Salmonella*) — what remains is hardware and proof: choose probe parts; validate that they
+  read the true geometric **coldest point** (get this wrong and the integral measures the
+  wrong place); run a challenge study on the real product; build the integrity dossier for
+  the safety controller.
+- **Bacillus cereus spores (H-new, ADR-0015):** endemic to cereal/legume flours and **not
+  killed by the bake** — spore D-values are minutes at retort temperature, so no F-value the
+  SF1 channel can accumulate touches them. The control is **time, not heat**: serve
+  immediately, never hold a baked batch warm, and discard rather than re-warm. Needs an
+  explicit maximum bake→serve interval and a divert-on-timeout rule in the interlock; not
+  yet implemented.
 - **SF2 clean verification (ADR-0010):** the hardest open problem — an unattended, reliable
   *sensor* that proves a food surface is clean (residue below a safe threshold) every cycle.
   Bench the thermal+steam+scrape log-reduction; decide go/no-go on avoiding chemicals.

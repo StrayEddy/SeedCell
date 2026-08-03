@@ -9,8 +9,8 @@ state belongs in GitHub Issues once the repo is public.
 | # | Item | Area | Why |
 |---|------|------|-----|
 | 1 | Residue + release bench test | food/hygiene | The master variable (ADR-0011); gates SF2, SF3, the surface + formula. See below. |
-| 2 | F-value lethality target for a legume flatbread | food-safety | SF1's real target (ADR-0009); replaces the placeholder 75 °C core assumption. |
-| 3 | Clean-verify sensor survey | sensing | The hardest open problem: prove a food surface is clean, every cycle, unattended (SF2). |
+| 2 | Clean-verify sensor survey | sensing | The hardest open problem: prove a food surface is clean, every cycle, unattended (SF2). |
+| 3 | Bake→serve timeout for *B. cereus* spores | food-safety | Fell out of ADR-0015: spores survive the bake, so the control is time, not heat. The interlock needs a max hold interval + divert-on-timeout. |
 
 ## Next (medium priority)
 | # | Item | Area | Why |
@@ -19,6 +19,13 @@ state belongs in GitHub Issues once the repo is public.
 | 5 | Low-adhesion coating durability | materials | PTFE/ceramic under scrape + 230 °C + steam (ADR-0008/0010); couples SF3 wear (H8). |
 | 6 | Export pipeline → twin/render | sim | `export_godot.py` + a visual `process_demo` scene (ADR-0014); currently logic-only. |
 | 7 | SF4 burn/pinch hardware | safety | Surface-temp cap from burn data; mouth presence + safety edge. |
+
+## Done
+- **F-value lethality target** (was Now #2) — **ADR-0015**, 2026-08-03. F₇₀ ≥ 13.9 equivalent
+  seconds, 7-log *Salmonella*, z = 6.29 °C fitted to the FDA Food Code table; replaces the
+  placeholder 75 °C core assumption. `godot/lethality_model.gd` + `tests/test_lethality_model.gd`.
+  Note what this did *not* close: probe parts, coldest-point validation and a challenge study
+  are still gated hardware work (items 10/11 below), and it surfaced a new hazard (Now #3).
 
 ## Critical-path experiment (not desk work)
 **Residue + release is SeedCell's master variable** — the food equivalent of HiveCell's

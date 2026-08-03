@@ -411,6 +411,75 @@ scripts and (if it moves) wired in the Godot scene.
 
 ---
 
+## ADR-0015 — SF1 kill-step target: 7-log Salmonella as an F-value, not a core temperature
+**Date:** 2026-08-03
+**Status:** Accepted (target + model); challenge-study validation and probe placement TBD
+
+**Context.** ADR-0009 fixed the *architecture* of the cook-lethality safeguard — diverse
+channels, AND-toward-safe, fault-is-unsafe — but left the actual criterion as an
+acknowledged guess: "core reaches 75 °C". That is not a kill-step. It names a temperature
+and says nothing about how long it is held, so it cannot distinguish a core that touched
+75 °C for a millisecond from one held there for a minute; and it assigns no value at all
+to a cook that stalled at 68 °C. The `ft_integrator` channel had no physics behind it —
+it was a boolean somebody else had to set.
+
+**Decision.**
+1. **The criterion is an accumulated F-value, not a set-point.** Lethality accrues at
+   `rate(T) = 10^((T − T_ref)/z)` and `F = ∫ rate dt`, i.e. equivalent seconds held at the
+   reference temperature. Implemented in `godot/lethality_model.gd`.
+2. **Reference organism: *Salmonella* spp.**, the controlling vegetative pathogen for
+   cereal and legume flours. *E. coli* O157:H7 is less heat-resistant and is covered by
+   the same margin. The dough core is hydrated during the bake, so moist-heat resistance
+   applies.
+3. **Target: 7-log reduction**, matching the most stringent common regulatory cooking
+   standard. Justified by the vulnerable-user case already argued in ADR-0009.
+4. **Constants are fitted to the FDA Food Code 3-401.11 table**, which encodes that
+   7-log reduction in two rows — 63 °C/3 min and 66 °C/1 min. Fitting both gives
+   `z = 3/log₁₀(3) = 6.29 °C`, and the model reproduces the table exactly rather than
+   approximating it. **Target: F₇₀ ≥ 13.9 equivalent seconds.**
+5. **A 60 °C accumulation floor.** Below it, lethality credit is discarded rather than
+   integrated.
+6. **Integrate the coldest point**, never a mean and never the platen: `CookLethality.coldest()`
+   takes the lowest core probe, and an empty probe set returns NAN, which reads as a fault.
+7. **F is per-batch and never carried across one** (`new_batch()`), and a single
+   implausible sample latches the batch suspect no matter how much F was banked.
+
+**Why the floor (6) is a safety rule, not a numerical convenience.** The model is happy to
+accrue lethality at 55 °C, and that is mathematically correct — but reaching the target
+purely by dwelling there takes ~80 minutes sitting in the bacterial growth zone. Without a
+floor, a batch that was never really baked, just left warm, would eventually be declared
+cooked. Refusing sub-60 °C credit makes a marginal cook read as a *failed* cook, which is
+the direction that diverts to waste.
+
+**What this does NOT cover.** ***Bacillus cereus* spores**, endemic to cereal and legume
+flours, are not killed by any bake this machine can perform — spore D-values are minutes at
+retort temperature. Their control is not lethality but **time**: serve immediately, never
+hold warm. This is a distinct hazard and belongs in SAFETY.md, not in the F-value.
+
+**Consequence — the margin is enormous, and that is the point.** A hydrated core plateaus
+near 100 °C, where lethality accrues ~250,000× faster than at the 70 °C reference:
+`scripts/cook_energy.py` shows the target cleared at ~24 s and a nominal 90 s cycle banking
+~2.6×10⁵ times the requirement. The F-value is not there to constrain the good cook. It is
+there to catch the **failed** one — a cold core, a truncated cycle, a dead probe — and to
+make "cooked" a quantity a channel can positively prove rather than assert.
+
+**Rejected alternatives.**
+- *Keep a core set-point (75 °C, 85 °C, …)*: silent on hold time; the blind spot above.
+- *A round literature z of 6.0 °C*: undercuts the Food Code's own 66 °C row by 5% (demands
+  57 s where the table says 60 s), i.e. lenient against the regulation it claims to encode.
+- *Low-moisture (low-aw) Salmonella resistance data*: far more conservative, but wrong
+  physics for a hydrated core; it would be conservatism bought by modelling the wrong thing.
+- *Fixed bake timer*: no proof; drifts with ambient, ingredient and platen condition.
+
+**Accepted costs / to verify.** The constants are regulatory and literature values for a
+design model, **not a validated process**: a served product needs its own challenge study
+(SAFETY.md "Open items", ROADMAP #10). Probe placement must be shown to read the true
+geometric coldest point, otherwise the whole integral is measuring the wrong place. The
+`CORE_PLATEAU_C = 100 °C` cap in `cook_energy.py` is a modelling assumption about free
+water, conservative but unmeasured. Asserted by `godot/tests/test_lethality_model.gd`.
+
+---
+
 ## Component tree (one cell) — reference for ADR-0001
 
 1. Structure/enclosure: fixed heated `CookBarrel` (bore), wall-interface flange & trim,
