@@ -605,6 +605,40 @@ is the real fix and ADR-0001's "no door" should be amended rather than defended.
 it moves with the model), H6's mitigation and score in SAFETY.md, and — if the cycle timing changes —
 `cook_seconds` and the interlock states.
 
+### Addendum, 2026-08-04 — two corrections from drawing the mouth at 8:1
+
+Redrawing `docs/cell_anatomy.svg` with a proper mouth detail (views A/B and the 8:1 die-corner
+section C) turned up two things. Neither changes the recommendation; the second changes how big
+the problem is.
+
+**(a) The ledge is 4 mm, not 2 mm — but the *contact* really is 2 mm.** Above, this ADR calls the
+bore-end platen "the 2 mm annular ledge between die ID (156) and bore ID (164)". That gap is
+(164−156)/2 = **4 mm** radially. The 2 mm is a different number: it is how far the Ø160 disc
+overlaps the Ø156 die, (160−156)/2. Since the remaining 2 mm of ledge is the running clearance,
+which the disc never touches, the *effective* hot ring is 2 mm after all. The arithmetic was
+wrong and the conclusion was right, which is worth writing down rather than quietly fixing.
+
+**(b) There is no PRESS step anywhere, so "where is the piston during the bake?" is undecided —
+and it is the biggest single lever on this decision.** Three artefacts disagree:
+- `scripts/build_model.py` describes `chargeDepth` as "the piston retract that opens the
+  charge/**cook** chamber" — 60 mm open, for the cook.
+- **ADR-0007** presses the dough to 8 mm between two platens, which puts it against the die.
+- `godot/process_interlock.gd` runs CHARGE → HYDRATE → COOK **without moving the piston at all**;
+  `progress` is untouched until PRESENT. The cycle strip in the drawing, meanwhile, has always
+  drawn the bake already pressed up.
+
+This is not a documentation tidy-up. **If the press happens before the bake, the Ø160 dough disc
+plugs the Ø156 die for the whole ~90 s cook**, and the open-mouth window collapses from ~90 s to
+the few seconds of CHARGE + HYDRATE. That is most of option 4, for free, and it materially
+improves how option 3 + 4 scores against options 1 and 2 — which are the two that cost a
+load-bearing ADR. Deciding the press order is therefore a **prerequisite** to deciding this ADR,
+not a consequence of it.
+
+It does not make the problem vanish: a few seconds of open mouth is still an opening, the bread's
+own face becomes the seal (with its own hygiene question, already noted under option 4), and
+**(a) is untouched** — a 2 mm contact ring still cannot bake a Ø160 disc, whenever the press
+happens. The platen half of this ADR stands on its own.
+
 ---
 
 ## ADR-0018 — A serving is not served until it is taken: SF8 collection proof

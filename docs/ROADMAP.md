@@ -10,7 +10,7 @@ state belongs in GitHub Issues once the repo is public.
 |---|------|------|-----|
 | 1 | Residue + release bench test | food/hygiene | The master variable (ADR-0011); gates SF2, SF3, the surface + formula. See below. |
 | 2 | Clean-verify sensor survey | sensing | The hardest open problem: prove a food surface is clean, every cycle, unattended (SF2). |
-| 3 | **Close the mouth during the bake** (decide ADR-0017) | safety | A stated H6 mitigation the geometry does not deliver: the mouth is an open Ø156 hole into a 230 °C chamber for the whole ~90 s cook. **Blocks freezing the bore.** |
+| 3 | **Close the mouth during the bake** (decide ADR-0017) | safety | A stated H6 mitigation the geometry does not deliver: the mouth is an open Ø156 hole into a 230 °C chamber for the whole ~90 s cook. **Blocks freezing the bore.** Prerequisite, per the 2026-08-04 addendum: **decide the press order first** — nothing in the repo says where the piston sits during the bake, and pressing before it collapses the exposure window to seconds. |
 | 4 | **Retract-with-a-hand-present** (SF4 mouth-presence gate on withdrawal) | safety | Surfaced by ADR-0018: the piston withdraws the moment a delivery ends, which is exactly when a hand is at the mouth. Pre-existing, now visible. Folds into item 8. |
 
 ## Next (medium priority)

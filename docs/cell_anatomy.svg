@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1420" viewBox="0 0 1400 1420">
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="2090" viewBox="0 0 1400 2090">
   <style>
     text{font-family:'DejaVu Sans','Helvetica',Arial,sans-serif}
     .title{font-size:23px;font-weight:bold;fill:#161a20}
@@ -8,6 +8,8 @@
     .grphdr{font-size:13.5px;font-weight:bold;fill:#161a20}
     .fnname{font-size:12.5px;font-weight:bold;fill:#161a20}
     .fntext{font-size:12px;fill:#3a4049}
+    .flag{font-size:11.5px;fill:#b3541e}
+    .flagb{font-size:11.5px;font-weight:bold;fill:#b3541e}
     .wall{fill:#c9ccd1;stroke:#5f646d;stroke-width:1.5}
     .bore{fill:#fdf7ee}
     .piston{fill:#9fb0c6;stroke:#39465e;stroke-width:1.6}
@@ -25,6 +27,8 @@
     .ghost{fill:none;stroke:#39465e;stroke-width:1.2;stroke-dasharray:6 4;opacity:.55}
     .cut{stroke:#39465e;stroke-width:1.1;stroke-dasharray:5 4}
     .dimline{stroke:#7a818c;stroke-width:.9}
+    .warn{stroke:#b3541e;stroke-width:1.4;fill:none}
+    .warnfill{fill:#b3541e}
   </style>
 
   <defs>
@@ -37,18 +41,26 @@
     <marker id="dimarr" markerWidth="8" markerHeight="8" refX="6" refY="2.5" orient="auto">
       <path d="M0,0 L6,2.5 L0,5 Z" fill="#7a818c"/>
     </marker>
+    <marker id="warr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#b3541e"/>
+    </marker>
     <pattern id="hatch" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
       <rect width="7" height="7" fill="#c9ccd1"/>
       <line x1="0" y1="0" x2="0" y2="7" stroke="#7d838d" stroke-width="1.1"/>
     </pattern>
+    <radialGradient id="hotbore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#7d2d12"/>
+      <stop offset="60%" stop-color="#4a1d0e"/>
+      <stop offset="100%" stop-color="#2a1208"/>
+    </radialGradient>
   </defs>
 
-  <rect x="0" y="0" width="1400" height="1420" fill="#ffffff"/>
+  <rect x="0" y="0" width="1400" height="2090" fill="#ffffff"/>
 
   <!-- ===================== HEADER ===================== -->
   <text x="40" y="40" class="title">SeedCell — anatomy of one cell</text>
   <text x="40" y="61" class="sub">Longitudinal section through the cook bore, drawn 1:1 from the parametric CAD (scripts/build_model.py — the source of truth). One cell = a fixed heated tube bored through a wall, with a single piston.</text>
-  <text x="40" y="78" class="sub">Piston shown in the CHARGE pose (retracted 60 mm, cook chamber open). It has four working poses — charge · cook · present · clean — shown in the cycle strip at right.</text>
+  <text x="40" y="78" class="sub">Piston shown in the CHARGE pose (retracted 60 mm, cook chamber open). Its working poses — charge · cook · present · await-collect · clean — are in the cycle strip at right.</text>
   <text x="40" y="95" class="sub">The piston face is simultaneously the flush public wall, the upper cook platen, the ejector, and the surface that parks in the sterilize zone. That is the whole machine (ADR-0001).</text>
 
   <!-- travel-axis arrow -->
@@ -96,6 +108,9 @@
   <rect x="147" y="448" width="4" height="4" class="hot"/>
   <rect x="147" y="608" width="4" height="4" class="hot"/>
   <text x="146" y="530" class="dim" text-anchor="middle" transform="rotate(-90 146 530)">MOUTH Ø156 — OPEN</text>
+  <!-- pointer down to the mouth detail band -->
+  <line x1="120" y1="545" x2="120" y2="590" class="warn" marker-end="url(#warr)"/>
+  <text x="114" y="568" class="flagb" text-anchor="end" transform="rotate(-90 114 568)">see MOUTH DETAIL</text>
 
   <!-- mouth die: hardened peeler ring, proud of the wall, ID smaller than the piston -->
   <rect x="140" y="440" width="10" height="12" class="wall"/>
@@ -248,9 +263,10 @@
       <text x="955" y="-14" class="fnname">3 · COOK</text>
       <text x="955" y="2" class="fntext">The piston presses the dough to 8 mm between two 230 °C</text>
       <text x="955" y="16" class="fntext">platens — the die end and the piston face. Both sides at once.</text>
+      <text x="955" y="30" class="flag">⚠ Drawn pressed-up, but nothing decides that — see flag 2 below.</text>
     </g>
     <!-- 4 PRESENT -->
-    <g transform="translate(0,740)">
+    <g transform="translate(0,745)">
       <rect x="770" y="-41" width="165" height="82" fill="#fdf7ee"/>
       <rect x="770" y="-45" width="165" height="4" class="wall"/>
       <rect x="770" y="41" width="165" height="4" class="wall"/>
@@ -261,10 +277,30 @@
       <text x="955" y="-14" class="fnname">4 · PRESENT  — gated, never automatic</text>
       <text x="955" y="2" class="fntext">Only if SF1 proves the kill-step AND SF7 proves the batch is not</text>
       <text x="955" y="16" class="fntext">stale AND SF2 proved the surfaces clean. The die shears the rim</text>
-      <text x="955" y="30" class="fntext">free; the face returns flush. Any doubt ⇒ waste, not a person.</text>
+      <text x="955" y="30" class="fntext">free. Any doubt ⇒ waste, not a person.</text>
     </g>
-    <!-- 5 CLEAN -->
-    <g transform="translate(0,845)">
+    <!-- 5 AWAIT COLLECT -->
+    <g transform="translate(0,850)">
+      <rect x="770" y="-41" width="165" height="82" fill="#fdf7ee"/>
+      <rect x="770" y="-45" width="165" height="4" class="wall"/>
+      <rect x="770" y="41" width="165" height="4" class="wall"/>
+      <rect x="765" y="-45" width="5" height="90" class="wall"/>
+      <rect x="770" y="-40" width="60" height="80" class="piston"/>
+      <rect x="750" y="-38" width="8" height="76" class="bread"/>
+      <!-- taken (up and away) vs not taken (down to waste) -->
+      <path d="M748,-26 C736,-34 730,-44 730,-52" stroke="#3a7d44" stroke-width="1.4" fill="none" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+      <text x="726" y="-56" style="font-size:10px;fill:#3a7d44" text-anchor="end">taken ⇒ served</text>
+      <path d="M748,26 C736,34 730,44 730,52" class="warn" stroke-dasharray="4 3" marker-end="url(#warr)"/>
+      <text x="726" y="58" style="font-size:10px;fill:#b3541e" text-anchor="end">not taken ⇒ waste</text>
+      <text x="955" y="-14" class="fnname">5 · AWAIT COLLECT  (SF8, ADR-0018)</text>
+      <text x="955" y="2" class="fntext">Presented is not served. The batch is held out until the face</text>
+      <text x="955" y="16" class="fntext">sensor sees it GONE — a loaded→empty transition, never a level,</text>
+      <text x="955" y="30" class="fntext">so a stuck sensor cannot invent a serving. Nobody comes within</text>
+      <text x="955" y="44" class="fntext">120 s ⇒ withdraw, condemn, divert. This also bounds how long</text>
+      <text x="955" y="58" class="fntext">the mouth stays open (H6).</text>
+    </g>
+    <!-- 6 CLEAN -->
+    <g transform="translate(0,975)">
       <rect x="770" y="-41" width="165" height="82" fill="#fdf7ee"/>
       <rect x="770" y="-45" width="165" height="4" class="wall"/>
       <rect x="770" y="41" width="165" height="4" class="wall"/>
@@ -274,26 +310,119 @@
       <rect x="862" y="36" width="8" height="10" class="ring"/>
       <path d="M866,-36 L870,-20" class="water" marker-end="url(#jet)"/>
       <path d="M866,36 L870,20" class="water" marker-end="url(#jet)"/>
-      <text x="955" y="-14" class="fnname">5 · CLEAN</text>
+      <text x="955" y="-14" class="fnname">6 · CLEAN</text>
       <text x="955" y="2" class="fntext">The face parks deep in the sealed sterilize zone: scrape (the lips</text>
       <text x="955" y="16" class="fntext">wiped the bore on the way past), steam, reused bake heat, dry.</text>
       <text x="955" y="30" class="fntext">Verified clean, or re-clean; three failures ⇒ lockout.</text>
     </g>
   </g>
 
-  <!-- key dimensions strip -->
-  <text x="40" y="900" class="dim">Key dims (mm): flatbread Ø160 × 8 · bore Ø164 · piston Ø160 · wall 8 · running clearance 2 (2 scraper lips bridge it) · barrel 330 · piston 120 · charge depth 60 · sterilize stow 150 · stroke 210 · die 10 thk, Ø156 bore · platens 230 °C</text>
-  <text x="40" y="934" style="font-size:11.5px;fill:#b3541e"><tspan font-weight="bold">OPEN QUESTION (found while drawing this):</tspan> the mouth die is a Ø156 ring and ADR-0001 rules out a separate door, so during CHARGE / HYDRATE / COOK — while the piston is retracted 60 mm —</text>
-  <text x="40" y="949" style="font-size:11.5px;fill:#b3541e">the mouth is an open Ø156 hole into the hot chamber. That contradicts hazard H6, whose stated mitigation is "mouth flush + sealed except during present".</text>
-  <text x="40" y="964" style="font-size:11.5px;fill:#b3541e">Either the cook chamber has to move deeper than the die, or something has to close the mouth during the bake. Options and trade-offs: ADR-0017 (open). Drawn here as the CAD actually is.</text>
-  <text x="40" y="917" class="dim">Drawn 1:1 from scripts/build_model.py. Scraper lips are shown exaggerated for legibility (true lip: 2 mm radial × 4 mm axial). Hoppers, waste chute and service plant are space-claim envelopes, not detailed.</text>
+  <!-- ===================== MOUTH DETAIL BAND ===================== -->
+  <line x1="40" y1="1055" x2="1360" y2="1055" stroke="#d7dbe1" stroke-width="1"/>
+  <text x="40" y="1080" class="grphdr">MOUTH DETAIL — what ADR-0017 is actually about</text>
+  <text x="40" y="1097" class="dim">A and B look at the wall from the street (~1:1). C is the die corner at 8:1. All drawn as the CAD actually is, not as the hazard register assumes.</text>
+
+  <!-- A: sealed -->
+  <g transform="translate(170,1220)">
+    <text x="0" y="-102" class="small" text-anchor="middle" fill="#39465e">A · SEALED  (piston flush at X=0)</text>
+    <rect x="-118" y="-92" width="236" height="184" fill="url(#hatch)" opacity=".5"/>
+    <circle cx="0" cy="0" r="88" class="wall"/>
+    <circle cx="0" cy="0" r="76" class="piston"/>
+    <circle cx="0" cy="0" r="76" fill="none" stroke="#39465e" stroke-width="1.2"/>
+    <circle cx="0" cy="-64" r="5" fill="#3fb950" stroke="#2a7a38" stroke-width="1"/>
+    <text x="0" y="4" class="dim" text-anchor="middle" fill="#20242b">piston face</text>
+    <text x="0" y="110" class="dim" text-anchor="middle">What H6's mitigation assumes: "mouth flush +</text>
+    <text x="0" y="124" class="dim" text-anchor="middle">sealed except during present". True in IDLE and</text>
+    <text x="0" y="138" class="dim" text-anchor="middle">at the end of the present stroke. Only there.</text>
+  </g>
+
+  <!-- B: open -->
+  <g transform="translate(450,1220)">
+    <text x="0" y="-102" class="small" text-anchor="middle" fill="#39465e">B · OPEN  (piston retracted 60 mm)</text>
+    <rect x="-118" y="-92" width="236" height="184" fill="url(#hatch)" opacity=".5"/>
+    <circle cx="0" cy="0" r="88" class="wall"/>
+    <circle cx="0" cy="0" r="76" fill="url(#hotbore)"/>
+    <circle cx="0" cy="0" r="76" fill="none" stroke="#39465e" stroke-width="1.2"/>
+    <path d="M-54,54 A76,76 0 0,0 54,54 C37,41 -37,41 -54,54 Z" class="blend" opacity=".9"/>
+    <text x="0" y="-14" style="font-size:11px;fill:#f2cfae" text-anchor="middle">open Ø156 hole</text>
+    <text x="0" y="1" style="font-size:11px;fill:#f2cfae" text-anchor="middle">into a 230 °C chamber</text>
+    <text x="0" y="110" class="dim" text-anchor="middle">What the CAD actually does through CHARGE and</text>
+    <text x="0" y="124" class="dim" text-anchor="middle">HYDRATE — and, per ADR-0017, for the whole</text>
+    <text x="0" y="138" class="dim" text-anchor="middle">~90 s bake. On a public street.</text>
+  </g>
+
+  <!-- C: die corner at 8:1.  y(r) = 1360 - (r-70)*8 ;  x(X) = 640 + (X+14)*8 -->
+  <g>
+    <text x="784" y="1118" class="small" text-anchor="middle" fill="#39465e">C · die corner, 8:1 — the whole "hot bore-end platen" (ADR-0007)</text>
+    <!-- everything inside die ID Ø156 faces the street, not metal -->
+    <rect x="640" y="1296" width="112" height="64" fill="url(#hotbore)" opacity=".26"/>
+    <text x="696" y="1327" style="font-size:10px;fill:#7a4018" text-anchor="middle">open to the</text>
+    <text x="696" y="1340" style="font-size:10px;fill:#7a4018" text-anchor="middle">street</text>
+    <!-- bore void -->
+    <rect x="752" y="1264" width="176" height="96" class="bore"/>
+    <!-- barrel wall -->
+    <rect x="752" y="1200" width="176" height="64" class="wall"/>
+    <text x="844" y="1230" style="font-size:10px;fill:#4a505a" text-anchor="middle">CookBarrel — wall 8</text>
+    <text x="844" y="1243" style="font-size:10px;fill:#4a505a" text-anchor="middle">bore Ø164</text>
+    <!-- mouth die (X = -10..0, r = 78..90) -->
+    <rect x="672" y="1200" width="80" height="96" class="wall"/>
+    <text x="712" y="1240" style="font-size:10px;fill:#4a505a" text-anchor="middle">MouthDie</text>
+    <text x="712" y="1253" style="font-size:10px;fill:#4a505a" text-anchor="middle">Ø180 / Ø156</text>
+    <!-- the ledge: die ID 78 -> bore 82, i.e. 4 mm radial -->
+    <rect x="746" y="1264" width="6" height="32" class="hot"/>
+    <!-- the dough disc, pressed against X=0: r = 0..80, 8 mm thick -->
+    <rect x="752" y="1280" width="64" height="80" class="bread"/>
+    <text x="784" y="1322" style="font-size:10px;fill:#6b3d12" text-anchor="middle">dough disc</text>
+    <text x="784" y="1335" style="font-size:10px;fill:#6b3d12" text-anchor="middle">Ø160 × 8</text>
+    <!-- the 2 mm of it that actually touches hot metal -->
+    <rect x="746" y="1280" width="6" height="16" fill="#8f3218"/>
+    <line x1="749" y1="1296" x2="749" y2="1378" class="warn" stroke-dasharray="4 3"/>
+    <line x1="749" y1="1378" x2="690" y2="1378" class="warn"/>
+    <text x="686" y="1374" class="flagb" text-anchor="end">2 mm</text>
+    <text x="686" y="1388" class="flag" text-anchor="end">of contact</text>
+    <!-- ledge extent -->
+    <line x1="742" y1="1264" x2="700" y2="1218" class="leader"/>
+    <text x="696" y="1215" class="dim" text-anchor="end">ledge 4</text>
+  </g>
+
+  <!-- annotation -->
+  <g transform="translate(960,1140)">
+    <text x="0" y="0" class="fnname">Why the two halves are one decision</text>
+    <text x="0" y="20" class="fntext">ADR-0007 bakes the disc by conduction between two heated</text>
+    <text x="0" y="34" class="fntext">platens: the piston face, and "the heated bore-end/die".</text>
+    <text x="0" y="48" class="fntext">Section C is what that second platen actually is.</text>
+    <text x="0" y="72" class="fntext">The ledge between die ID Ø156 and bore ID Ø164 is 4 mm wide</text>
+    <text x="0" y="86" class="fntext">radially — but the Ø160 disc overlaps the die by only 2 mm, so</text>
+    <text x="0" y="100" class="fntext">the hot ring it can actually touch is 2 mm. Everything inside</text>
+    <text x="0" y="114" class="fntext">Ø156 faces the open mouth, not metal.</text>
+    <text x="0" y="138" class="fntext">A 2 mm contact ring cannot conduction-bake a Ø160 disc. So the</text>
+    <text x="0" y="152" class="fntext">machine has no working lower platen AND no closure for the</text>
+    <text x="0" y="166" class="fntext">mouth. Whatever closes the mouth probably has to BE the</text>
+    <text x="0" y="180" class="fntext">platen — which is why ADR-0017 treats these as one decision,</text>
+    <text x="0" y="194" class="fntext">not two. Its three options are in DECISIONS.md.</text>
+    <text x="0" y="218" class="dim">(ADR-0017 calls the ledge "2 mm". The ledge is 4 mm; the</text>
+    <text x="0" y="232" class="dim">contact is 2 mm. Its conclusion is unchanged.)</text>
+  </g>
+
+  <!-- ===================== KEY DIMS + OPEN FLAGS ===================== -->
+  <text x="40" y="1425" class="dim">Key dims (mm): flatbread Ø160 × 8 · bore Ø164 · piston Ø160 · wall 8 · running clearance 2 (2 scraper lips bridge it) · barrel 330 · piston 120 · charge depth 60 · sterilize stow 150 · stroke 210 · die 10 thk, Ø156 bore · platens 230 °C</text>
+  <text x="40" y="1442" class="dim">Drawn 1:1 from scripts/build_model.py (mouth detail as noted). Scraper lips are shown exaggerated for legibility (true lip: 2 mm radial × 4 mm axial). Hoppers, waste chute and service plant are space-claim envelopes, not detailed.</text>
+
+  <text x="40" y="1472" class="flag"><tspan class="flagb">FLAG 1 — the mouth is not sealed during the bake (ADR-0017, OPEN; blocks freezing the bore).</tspan> The mouth die is a Ø156 ring and ADR-0001 rules out a separate door, so while</text>
+  <text x="40" y="1487" class="flag">the piston is retracted the mouth is an open hole into the hot chamber (view B). That contradicts hazard H6, whose stated mitigation is "mouth flush + sealed except during present" —</text>
+  <text x="40" y="1502" class="flag">a stated mitigation the geometry does not deliver, which is a worse class of problem than an unimplemented one. The CAD also gives no workable lower platen at that end (section C).</text>
+
+  <text x="40" y="1528" class="flag"><tspan class="flagb">FLAG 2 — there is no PRESS step anywhere, so "where is the piston during the bake?" is undecided.</tspan> Three artefacts disagree: build_model.py calls chargeDepth "the piston</text>
+  <text x="40" y="1543" class="flag">retract that opens the charge/cook chamber" (60 mm open); ADR-0007 presses the dough to 8 mm between two platens; the twin runs CHARGE → HYDRATE → COOK without moving the piston</text>
+  <text x="40" y="1558" class="flag">at all, and cycle panel 3 draws the bake already pressed up. Not cosmetic: if the press happens BEFORE the bake, the dough disc plugs the die and the exposure window is a few seconds</text>
+  <text x="40" y="1573" class="flag">rather than ~90 s — which is most of ADR-0017's option 4, for free. Found while drawing this sheet. Nothing in the repo currently decides it.</text>
 
   <!-- ===================== LEGEND ===================== -->
-  <line x1="40" y1="984" x2="1360" y2="984" stroke="#d7dbe1" stroke-width="1"/>
+  <line x1="40" y1="1600" x2="1360" y2="1600" stroke="#d7dbe1" stroke-width="1"/>
 
   <!-- column 1 -->
-  <text x="40" y="1010" class="grphdr">STRUCTURE &amp; MOTION</text>
-  <g transform="translate(40,1024)">
+  <text x="40" y="1626" class="grphdr">STRUCTURE &amp; MOTION</text>
+  <g transform="translate(40,1640)">
     <text x="0" y="16" class="fnname">1 · CookBarrel — the fixed heated bore</text>
     <text x="0" y="32" class="fntext">A stationary tube through the wall, open at both ends: the</text>
     <text x="0" y="46" class="fntext">mouth at X=0, the service side at X=330. Its far end is the</text>
@@ -318,8 +447,8 @@
   </g>
 
   <!-- column 2 -->
-  <text x="490" y="1010" class="grphdr">FOOD PATH &amp; CLEANING</text>
-  <g transform="translate(490,1024)">
+  <text x="490" y="1626" class="grphdr">FOOD PATH &amp; CLEANING</text>
+  <g transform="translate(490,1640)">
     <text x="0" y="16" class="fnname">9 · DryStorage (SF6) — sealed hoppers</text>
     <text x="0" y="32" class="fntext">Everything upstream of the bore stays DRY: flour, legume,</text>
     <text x="0" y="46" class="fntext">salt, oil. A dry surface does not grow anything, so it never</text>
@@ -346,8 +475,8 @@
   </g>
 
   <!-- column 3 -->
-  <text x="940" y="1010" class="grphdr">SAFETY FUNCTIONS — what must be true to serve</text>
-  <g transform="translate(940,1024)">
+  <text x="940" y="1626" class="grphdr">SAFETY FUNCTIONS — what must be true to serve</text>
+  <g transform="translate(940,1640)">
     <text x="0" y="16" class="fnname">SF1 · Cook lethality  (primary)</text>
     <text x="0" y="30" class="fntext">An accumulated F-value, not a set-point: F₇₀ ≥ 13.9 equivalent</text>
     <text x="0" y="44" class="fntext">seconds = 7-log Salmonella. Four diverse channels, all must</text>
@@ -374,7 +503,12 @@
     <text x="0" y="314" class="fntext">Spores survive the bake and their toxin is heat-stable, so this</text>
     <text x="0" y="328" class="fntext">one is controlled by TIME: a batch held too long below 60 °C</text>
     <text x="0" y="342" class="fntext">is waste, not food (ADR-0016).</text>
+
+    <text x="0" y="366" class="fnname">SF8 · Collection proof</text>
+    <text x="0" y="380" class="fntext">A serving is not served until someone TAKES it — proven as a</text>
+    <text x="0" y="394" class="fntext">loaded→empty transition, never a level, so a stuck sensor fails</text>
+    <text x="0" y="408" class="fntext">to waste. An uncollected batch is withdrawn (ADR-0018).</text>
   </g>
 
-  <text x="40" y="1400" class="dim">SeedCell — open hardware (CERN-OHL-S-2.0) · docs CC-BY-4.0 · github.com/StrayEddy/SeedCell · decisions in docs/DECISIONS.md, hazards in docs/SAFETY.md</text>
+  <text x="40" y="2065" class="dim">SeedCell — open hardware (CERN-OHL-S-2.0) · docs CC-BY-4.0 · github.com/StrayEddy/SeedCell · decisions in docs/DECISIONS.md, hazards in docs/SAFETY.md</text>
 </svg>
