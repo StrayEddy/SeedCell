@@ -26,11 +26,12 @@ Risk = Severity (1-4) × Likelihood (1-4). Severity 4 = serious/widespread illne
 | H3 | Spoiled / wet ingredient served | Damp hopper grows mould; spoiled oil | 3 | 2 | 6 | SF6 spoilage lockout (moisture/temp); dry storage (ADR-0012) |
 | H4 | Burn at the mouth | Hot piston face / just-baked bread scalds a hand/mouth | 3 | 3 | 9 | SF4 delivered-surface temperature cap; brief present; edge geometry |
 | H5 | Pinch / crush at the mouth | Hand reaches in as the piston presents | 3 | 2 | 6 | SF4 force cap + safety edge → abort present; SF5 slow final approach |
-| H6 | Contaminant ingress / tampering | Foreign object, fluid, or vandalism pushed into the mouth | 4 | 2? | 8? | Mouth flush + sealed except during present; presence gate; inspect-on-open. **⚠ This mitigation does not currently hold — see ADR-0017. The L=2 score assumed a sealed mouth; with the mouth open for the whole bake it is optimistic and must be re-scored once ADR-0017 is decided.** |
+| H6 | Contaminant ingress / tampering | Foreign object, fluid, or vandalism pushed into the mouth | 4 | 2? | 8? | Mouth flush + sealed except during present; presence gate; inspect-on-open. **⚠ This mitigation does not currently hold — see ADR-0017. The L=2 score assumed a sealed mouth; with the mouth open for the whole bake it is optimistic and must be re-scored once ADR-0017 is decided.** The *delivery* window is now bounded (SF8, ADR-0018); the *bake* window is the part that is not. |
 | H7 | Cleaning-chemical residue on food surface | A disinfectant (if used) left on the piston face | 4 | 1 | 4 | ADR-0010 thermal+steam, NO per-cycle chemical; if added, a dose+rinse verify + fail-safe |
 | H8 | Foreign body from mechanism wear | Coating flake / seal fragment ends up in the bread | 3 | 2 | 6 | Food-grade materials; SF3 wear budget; inspection; frangible-part exclusion from food path |
 | H9 | Allergen exposure | Wheat/legume allergens inherent to the formula | 3 | 3 | 9 | Clear fixed labelling at the machine; formula is fixed + published (facility-level) |
 | H10 | Spore outgrowth in a held batch | *B. cereus* spores survive the bake (H1's kill-step cannot reach them) and outgrow while a finished batch waits; the emetic toxin is heat-stable, so no later heating can fix it | 4 | 2 | 8 | SF7 bake→serve hold budget, temperature-gated, divert on timeout (ADR-0016) |
+| H11 | Uncollected serving | Nobody takes the presented batch (the requester left, was frightened off, or dropped it): the mouth stays open on it, a person is debited a ration they never received (ADR-0013), and street-exposed food is drawn back through the bore | 4 | 2 | 8 | SF8 collection proof — `served` only on a proven loaded→empty transition; bounded delivery window; condemn + divert on timeout (ADR-0018) |
 
 ## Safety functions
 Status: **[sim]** = logic implemented and machine-checked in the digital twin — NOT rated
@@ -74,8 +75,17 @@ hardware, no performance-level claim yet. **[decision]** = chosen, not yet imple
   that no amount of heat can fix after the fact — the control is **time**. A temperature-gated
   clock accrues only sub-60 °C time from end-of-bake; past the budget (default **15 min**,
   a facility-level parameter) the batch is diverted to waste, never served. A dead thermometer
-  accrues risk rather than pausing the clock. **ADR-0016** / `godot/spore_hold.gd`. Does *not*
-  cover a batch left uncollected at the mouth — that needs a collection sensor (open item).
+  accrues risk rather than pausing the clock. **ADR-0016** / `godot/spore_hold.gd`. The batch
+  left uncollected at the mouth — the case SF7 did not cover — is now **SF8**.
+- **SF8 Collection proof (accounting + exposure)** — *[sim: transition-proven]* a serving is not
+  *served* until a person has positively **taken** it. Collection is read as a **transition**
+  (the face seen carrying the batch, then seen empty), never as a level, so a sensor stuck at
+  either end fails to waste instead of manufacturing a phantom serving. The whole delivery —
+  stroke plus the `AWAIT_COLLECT` wait — is bounded by a window (default **120 s**); on expiry
+  the batch is withdrawn, condemned and diverted, never re-offered. The window is nested inside
+  SF7's hold budget, so the food-safety bound always dominates; what SF8 bounds is the open-mouth
+  exposure (H6) and one person's ability to hold the machine out of service. Sensor: loss-of-mass
+  on the actuator force channel SF4 already needs. **ADR-0018** / `godot/collection_guard.gd`.
 
 ## FMEA — under-cook / cross-contamination chain (basis for the SF1/SF2 decisions)
 Component-level companion to the hazard register: how the cook/clean path can fail and what
@@ -119,6 +129,11 @@ and is regression-checked; it is NOT rated hardware and makes no performance-lev
 - `godot/spore_hold.gd` (+ `test_spore_hold.gd`) — SF7 bake→serve hold (ADR-0016): only
   sub-60 °C time accrues, a dead sensor accrues rather than pauses, an over-held batch is
   diverted and never served, and every batch is accounted for as served or wasted.
+- `godot/collection_guard.gd` (+ `test_collection.gd`) — SF8 collection proof (ADR-0018):
+  collection is the loaded→empty transition, a stuck or blind sensor times out to waste,
+  the mouth does not stay open past the window, and `served` counts people fed rather than
+  strokes completed. The served + wasted accounting invariant is re-asserted over the new
+  `AWAIT_COLLECT` state.
 - `godot/soft_profile.gd` (+ `test_soft_profile.gd`) — SF5 soft motion profile, shared with HiveCell.
 - `scripts/build_model.py` — SF3 scraper lips (2 circular rings) + the minimal food-contact
   geometry; `scripts/residue.py` brackets the master residue/release variable (ADR-0011);
@@ -126,6 +141,7 @@ and is regression-checked; it is NOT rated hardware and makes no performance-lev
   budgets the piston force (dough forming dominates).
 
 Addressed in sim: H1 by SF1 (+ fail-safe divert), H10 by SF7 (hold budget + divert-on-timeout),
+H11 by SF8 (collection proof + bounded delivery window),
 H2 by SF2 + ADR-0008 (residue TBV by test),
 H4/H5 by SF4 abort logic, H3 by SF6 (decision), H7 designed out by ADR-0010. H6/H8/H9 are
 facility/material/label items below.
@@ -165,9 +181,17 @@ does not choose them.
   the safety controller.
 - **Bacillus cereus spores (SF7, ADR-0016):** the control is implemented — a temperature-gated
   bake→serve budget with divert-on-timeout (`godot/spore_hold.gd`). What remains: confirm the
-  15-minute default against a challenge study on the real product, and close the **uncollected
-  batch** case — a serving left presented at the mouth is currently outside the guard, and
-  needs a collection sensor plus an `AWAIT_COLLECT` state in the interlock.
+  15-minute default against a challenge study on the real product. The uncollected-batch case
+  it left open is now closed by SF8 (ADR-0018).
+- **SF8 collection sensing (ADR-0018):** the logic is implemented and the sensing principle is
+  chosen (loss-of-mass on the actuator force channel, read as a transition). What remains is
+  hardware: confirm a ~120 g batch is resolvable against the piston's own load and friction,
+  and revisit the 120 s window from real siting observation — it is an engineering judgement
+  about dignity and throughput, not a measured number. **Adjacent and NOT closed:** retracting
+  while a hand is still at the mouth is unguarded. It predates SF8 (the old code retracted the
+  instant the stroke finished, when a hand is most likely to be there), but `AWAIT_COLLECT` is
+  where it becomes visible. It needs the SF4 mouth-presence sensor plus a bounded wait-for-clear
+  before withdrawing — see the SF4 item below.
 - **SF2 clean verification (ADR-0010):** the hardest open problem — an unattended, reliable
   *sensor* that proves a food surface is clean (residue below a safe threshold) every cycle.
   Bench the thermal+steam+scrape log-reduction; decide go/no-go on avoiding chemicals.
@@ -175,6 +199,8 @@ does not choose them.
   (`docs/residue_bench_test.md`) before fixing lip count/interference; couples SF2, the surface
   spec (ADR-0008), and H8 wear. The master variable.
 - **SF4 burn/pinch:** set the touch-safe surface cap from burn-threshold data; select the mouth
-  presence sensor + safety edge + delivered-surface thermometer.
+  presence sensor + safety edge + delivered-surface thermometer. That presence sensor is also
+  what gates the **retract-with-a-hand-present** case flagged under SF8 above: the withdrawal
+  should wait (boundedly) for the mouth to read clear.
 - **ADR-0013 ration/identity:** privacy + fairness review of ephemeral on-device recognition;
   bias testing across skin tones/occlusion; legal review; a no-camera fallback.

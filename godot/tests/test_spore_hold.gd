@@ -43,6 +43,10 @@ func _new_pi():
 ## guard says it is unservable. This is the property the whole file exists to protect.
 func _run(pi, n: int, tag: String) -> void:
 	for i in n:
+		# A batch is only served once someone takes it (SF8, ADR-0018); simulate a
+		# collector so these scenarios still exercise the SF7 gate rather than timing out.
+		if pi.state == Interlock.State.AWAIT_COLLECT:
+			pi.face_loaded = false
 		var served_before: int = pi.served
 		var servable_before: bool = pi.spore_hold.servable()
 		pi.step(DT)

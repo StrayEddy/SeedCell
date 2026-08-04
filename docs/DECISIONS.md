@@ -607,6 +607,103 @@ it moves with the model), H6's mitigation and score in SAFETY.md, and — if the
 
 ---
 
+## ADR-0018 — A serving is not served until it is taken: SF8 collection proof
+**Date:** 2026-08-04
+**Status:** Accepted (sensor principle + gate logic); the sensor part and the window length
+are commissioning choices
+
+**Context.** ADR-0016 closed the bake→collect interval and, in the same breath, named what it
+could not reach: *"an uncollected batch left presented at the mouth — that needs a collection
+sensor and an `AWAIT_COLLECT` state."* Until now the interlock did not model collection at
+all. It incremented `served` the instant the present stroke reached full extension and
+retracted immediately — i.e. it **assumed collection was instantaneous and always
+successful**. Three separate problems hide inside that one assumption:
+
+1. **Accounting.** "Presented" is not "served". `served` is the twin's liveness measure —
+   the thing that stops a trivially-frozen machine from passing its own safety tests — and it
+   was measuring *that the piston moved*. Worse, the ration policy (ADR-0013) debits a person
+   for a serving; debiting someone for bread they never received is a real harm to exactly
+   the population this machine exists for.
+2. **Exposure.** Waiting for a person to take the bread holds the mouth open. Modelling the
+   wait honestly *creates* an open-mouth window that must then be **bounded**, or a machine
+   nobody came back to sits open to the street (H6).
+3. **Re-entry.** An uncollected batch has stood in public air, possibly handled, before the
+   piston withdraws it back through the bore. It must be condemned, not re-offered.
+
+**Decision.**
+1. **New `AWAIT_COLLECT` state.** The stroke ends by *holding the batch out*, not by
+   declaring victory. `served` increments in exactly one place (`_hand_over()`), reached only
+   from a proven collection.
+2. **Collection is a TRANSITION, not a level.** The guard requires the face to be seen
+   **carrying** the batch and only *then* seen **empty**. This is the whole integrity
+   argument: a sensor stuck at "empty" never arms and so can never manufacture a phantom
+   serving; a sensor stuck at "occupied" never sees the transition. Both stuck failures run
+   the window out and send the batch to waste — the direction every other guard here fails in.
+3. **The window bounds the whole delivery** (stroke + wait), default **120 s**. On expiry the
+   batch is condemned: withdraw, `DIVERT`, count as waste. No retry, and nothing is left lying
+   at the die.
+4. **The window is not a food-safety number, and is deliberately nested inside SF7's.**
+   120 s against a 900 s hold budget: whichever expires first condemns the batch, so SF7
+   always dominates and the collection window can never extend a batch's life. What it bounds
+   is *exposure* (H6) and *availability* — how long one person who walked away can hold the
+   machine out of service for the next.
+5. **Collection is accepted at any point in the delivery**, including mid-stroke. If the
+   bread is lifted off the face on its way out, the correct response is to stop pushing and
+   withdraw — not to keep driving an empty hot face out into the mouth.
+6. **SF4 splits across the wait.** The **pinch** cap deliberately does *not* gate
+   `AWAIT_COLLECT`: the piston is stationary and generates no crushing force, and a hand at
+   the mouth is the *intended* event — gating the wait on contact force would condemn
+   batches for being collected. The **burn** cap still does gate it: if the presented
+   surface stops being touch-safe, withdrawing it takes the hot thing out of reach, and
+   that is the protective move. SF7 also keeps running through the wait.
+7. **The sensor is loss-of-mass on the actuator force channel** that SF4's contact cap
+   already requires — no new hardware, same as SF7 reusing the burn guard's thermometer.
+
+**Why withdrawing a street-exposed batch back through the bore is acceptable.** It looks like
+a contamination path into the machine, and it would be one — except that `DIVERT` is *always*
+followed by `CLEAN` + `CLEAN_VERIFY`, and no charge can begin until that verification passes
+(SF2). The recovery is therefore free: it reuses the gate that already lets the machine bake
+at all. Leaving the batch at the die instead would be strictly worse — food outside the
+cleanable volume, blocking the next delivery.
+
+**Why there is no `suspect` latch (unlike SporeHold).** SF7 integrates *time*, so a blind
+interval destroys information permanently and must be assumed dangerous — hence its latch.
+SF8 reads a *state that persists*: a sensor that faults and recovers can still see the face,
+and the truth is unchanged. A blind interval costs only the clock that runs through it, and
+running that clock out already means waste. Copying SF7's latch here would have been
+cargo-culted rigour, not rigour.
+
+**Rejected alternatives.**
+- *Beam-break across the mouth aperture*: sees a **hand**, not a batch. It cannot distinguish
+  "took the bread" from "reached in and left", which is precisely the case that matters.
+- *Treat "face empty" as collection (level, not transition)*: one stuck-open sensor then
+  reports a full day of phantom servings while dropping bread on the pavement — and, via
+  ADR-0013, debits every one of those people.
+- *Re-present an uncollected batch to the next requester*: it has stood in public air and may
+  have been handled. Serving it would trade the machine's central promise for one flatbread.
+- *No timeout — wait indefinitely for collection*: hands H6 an unbounded open mouth and lets a
+  single person who walked away deny service to everyone behind them.
+- *Keep counting `served` at full extension and add the sensor later*: leaves the liveness
+  measure — the one that certifies the safety tests aren't vacuous — measuring the wrong event.
+
+**Accepted costs / what this does NOT close.**
+- **Retracting while a hand is at the mouth is still unguarded.** This is pre-existing (the
+  old code retracted immediately after a completed push, when a hand is *most* likely to be
+  there) and is not made worse here, but `AWAIT_COLLECT` is where it becomes visible. Closing
+  it needs the SF4 mouth-presence sensor plus a bounded "wait for clear before withdrawing" —
+  ROADMAP item 8, tracked there explicitly.
+- 120 s is an engineering judgement about dignity and throughput, not a measured number; it
+  should be revisited from real siting observation (someone slow, encumbered, or unsure).
+- The guard proves the batch **left**. It does not prove **who** took it — that is ADR-0013,
+  and deliberately stays separate.
+
+**Implementation.** `godot/collection_guard.gd` + `godot/tests/test_collection.gd`;
+`AWAIT_COLLECT` + `_hand_over()` + `mouth_open()` in `godot/process_interlock.gd`. SAFETY.md
+gains **H11** and **SF8**. The accounting invariant from ADR-0016 — *served + wasted accounts
+for every batch made* — is re-asserted across the new state (scenario S4).
+
+---
+
 ## Component tree (one cell) — reference for ADR-0001
 
 1. Structure/enclosure: fixed heated `CookBarrel` (bore), wall-interface flange & trim,

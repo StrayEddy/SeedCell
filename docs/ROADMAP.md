@@ -11,7 +11,7 @@ state belongs in GitHub Issues once the repo is public.
 | 1 | Residue + release bench test | food/hygiene | The master variable (ADR-0011); gates SF2, SF3, the surface + formula. See below. |
 | 2 | Clean-verify sensor survey | sensing | The hardest open problem: prove a food surface is clean, every cycle, unattended (SF2). |
 | 3 | **Close the mouth during the bake** (decide ADR-0017) | safety | A stated H6 mitigation the geometry does not deliver: the mouth is an open Ø156 hole into a 230 °C chamber for the whole ~90 s cook. **Blocks freezing the bore.** |
-| 4 | Uncollected-batch handling (collection sensor + `AWAIT_COLLECT`) | food-safety | The gap ADR-0016 left open: SF7 guards the bake→collect interval, but a serving left sitting at the mouth is outside it. |
+| 4 | **Retract-with-a-hand-present** (SF4 mouth-presence gate on withdrawal) | safety | Surfaced by ADR-0018: the piston withdraws the moment a delivery ends, which is exactly when a hand is at the mouth. Pre-existing, now visible. Folds into item 8. |
 
 ## Next (medium priority)
 | # | Item | Area | Why |
@@ -19,7 +19,7 @@ state belongs in GitHub Issues once the repo is public.
 | 5 | Jet-hydration dough trials | food | Does blade-free injection mixing (ADR-0006) give uniform dough? Research question #2. |
 | 6 | Low-adhesion coating durability | materials | PTFE/ceramic under scrape + 230 °C + steam (ADR-0008/0010); couples SF3 wear (H8). |
 | 7 | Export pipeline → twin/render | sim | `export_godot.py` + a visual `process_demo` scene (ADR-0014); currently logic-only. |
-| 8 | SF4 burn/pinch hardware | safety | Surface-temp cap from burn data; mouth presence + safety edge. |
+| 8 | SF4 burn/pinch hardware | safety | Surface-temp cap from burn data; mouth presence + safety edge — the same sensor that gates Now #4's retract-with-a-hand-present case. |
 
 ## Done
 - **F-value lethality target** (was Now #2) — **ADR-0015**, 2026-08-03. F₇₀ ≥ 13.9 equivalent
@@ -32,7 +32,15 @@ state belongs in GitHub Issues once the repo is public.
   accruing only sub-60 °C time, 15-minute default budget, divert-on-timeout.
   `godot/spore_hold.gd` + `tests/test_spore_hold.gd`. Also closed a pre-existing accounting
   gap — a delivery aborted mid-stroke was counted as neither served nor wasted.
-  Still open: the uncollected-batch case, now Now #4.
+- **Uncollected-batch handling / SF8** (was Now #4) — **ADR-0018**, 2026-08-04. The gap ADR-0016
+  named. A new `AWAIT_COLLECT` state holds the batch out and `served` now increments only on a
+  proven **loaded→empty transition** on the face sensor — so a sensor stuck at either end fails
+  to waste rather than manufacturing a phantom serving, and `served` means *a person was fed*
+  rather than *the piston moved* (it was the twin's liveness measure, so it was measuring the
+  wrong event). The delivery window (120 s) is nested inside SF7's hold budget and bounds
+  open-mouth exposure, not food safety. `godot/collection_guard.gd` +
+  `tests/test_collection.gd`. **Surfaced a new gap:** retracting while a hand is still at the
+  mouth is unguarded — pre-existing, now Now #4 / item 8.
 
 ## Critical-path experiment (not desk work)
 **Residue + release is SeedCell's master variable** — the food equivalent of HiveCell's

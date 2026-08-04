@@ -26,14 +26,23 @@ func _check(cond: bool, msg: String) -> void:
 
 
 ## Step `n` frames. Every frame enforce the master invariants:
-##  - never in the PRESENT stroke with an unvalidated batch;
+##  - never at the open mouth with an unvalidated batch;
 ##  - the served counter never increments for a batch that was not lethal-validated.
+##
+## Since ADR-0018 a batch is only served once a person is proven to have TAKEN it, so these
+## scenarios simulate a collector: `auto_collect` clears the face sensor as soon as the
+## batch is presented. Scenarios that want an uncollected batch live in test_collection.gd.
+var auto_collect := true
+
+
 func _run(pi, n: int, tag: String) -> void:
 	for i in n:
+		if auto_collect and pi.state == Interlock.State.AWAIT_COLLECT:
+			pi.face_loaded = false
 		var served_before: int = pi.served
 		pi.step(DT)
-		if pi.state == Interlock.State.PRESENT:
-			_check(pi._batch_lethal, "%s: entered PRESENT with an unvalidated (raw) batch" % tag)
+		if pi.mouth_open():
+			_check(pi._batch_lethal, "%s: opened the mouth on an unvalidated (raw) batch" % tag)
 		if pi.served > served_before:
 			_check(pi._batch_lethal, "%s: SERVED a batch whose cook was not proven lethal" % tag)
 
@@ -97,6 +106,8 @@ func _initialize() -> void:
 	p5.contact_over_limit = true   # mouth force over the safe cap, from the start
 	var saw_present := false
 	for i in 600:
+		if p5.state == Interlock.State.AWAIT_COLLECT:
+			p5.face_loaded = false
 		p5.step(DT)
 		if p5.state == Interlock.State.PRESENT:
 			saw_present = true
