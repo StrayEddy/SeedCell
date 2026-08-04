@@ -10,7 +10,7 @@ state belongs in GitHub Issues once the repo is public.
 |---|------|------|-----|
 | 1 | Residue + release bench test | food/hygiene | The master variable (ADR-0011); gates SF2, SF3, the surface + formula. See below. |
 | 2 | Clean-verify sensor survey | sensing | The hardest open problem: prove a food surface is clean, every cycle, unattended (SF2). |
-| 3 | **Close the mouth during the bake** (decide ADR-0017) | safety | A stated H6 mitigation the geometry does not deliver: the mouth is an open Ø156 hole into a 230 °C chamber for the whole ~90 s cook. **Blocks freezing the bore.** Prerequisite, per the 2026-08-04 addendum: **decide the press order first** — nothing in the repo says where the piston sits during the bake, and pressing before it collapses the exposure window to seconds. |
+| 3 | **Close the mouth during the bake** (decide ADR-0017) | safety | A stated H6 mitigation the geometry does not deliver. **Prerequisite closed:** ADR-0019 (2026-08-04) decided the press order — piston presses flush right after HYDRATE and holds through COOK — which collapses the open-mouth window from ~90 s to ~9 s (CHARGE+HYDRATE+PRESS). ADR-0017 itself is still **OPEN**: ~9 s of open mouth remains, the bread's own face becomes the seal (hygiene question), and the 2 mm effective platen contact ring is unresolved. **Blocks freezing the bore.** |
 | 4 | **Retract-with-a-hand-present** (SF4 mouth-presence gate on withdrawal) | safety | Surfaced by ADR-0018: the piston withdraws the moment a delivery ends, which is exactly when a hand is at the mouth. Pre-existing, now visible. Folds into item 8. |
 
 ## Next (medium priority)
@@ -22,6 +22,13 @@ state belongs in GitHub Issues once the repo is public.
 | 8 | SF4 burn/pinch hardware | safety | Surface-temp cap from burn data; mouth presence + safety edge — the same sensor that gates Now #4's retract-with-a-hand-present case. |
 
 ## Done
+- **Press order** (prerequisite to Now #3) — **ADR-0019**, 2026-08-04. Piston presses flush
+  right after HYDRATE and holds through COOK — already implied by ADR-0006/ADR-0007's prose and
+  `cook_energy.py`'s pressed-thickness assumption, just never implemented. New `PRESS` state in
+  `godot/process_interlock.gd`; fixed a real bug it surfaced in `actuator_sizing.py` (press-stroke
+  velocity was computed off the full present↔clean stroke, not the actual 60 mm charge↔flush
+  travel — force number was fine, power/energy were overstated ~3.5x). Narrows ADR-0017's
+  open-mouth window from ~90 s to ~9 s; does not decide ADR-0017 itself.
 - **F-value lethality target** (was Now #2) — **ADR-0015**, 2026-08-03. F₇₀ ≥ 13.9 equivalent
   seconds, 7-log *Salmonella*, z = 6.29 °C fitted to the FDA Food Code table; replaces the
   placeholder 75 °C core assumption. `godot/lethality_model.gd` + `tests/test_lethality_model.gd`.

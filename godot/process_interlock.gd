@@ -17,9 +17,15 @@ class_name ProcessInterlock
 enum State {
 	IDLE,             # flush, sealed, sanitized, ready
 	RATION_CHECK,     # confirm this person is due a serving (ADR-0013)
-	CHARGE,           # meter dry blend into the bore (surfaces now dirty)
-	HYDRATE,          # inject water + oil -> dough (no mixer blade, ADR-0006)
-	COOK,             # heated bore + piston conduction-cook the flatbread
+	CHARGE,           # piston retracted (chargeDepth open): meter dry blend into the bore
+	                  # (surfaces now dirty)
+	HYDRATE,          # piston still retracted: inject water + oil -> dough in the open
+	                  # chamber (no mixer blade, ADR-0006)
+	PRESS,            # advance piston from retracted to flush: closes the mouth from the
+	                  # inside and becomes the second hot platen for the bake (ADR-0006,
+	                  # ADR-0007, ADR-0019). The mouth-open window this ADR-0017 worries
+	                  # about ends here, not at COOK.
+	COOK,             # piston held flush: heated bore + piston conduction-cook the flatbread
 	LETHALITY_CHECK,  # SF1: is the kill-step proven? else divert
 	PRESENT,          # advance piston, deliver the flatbread out the mouth
 	AWAIT_COLLECT,    # SF8: presented at the mouth, waiting for a person to take it
@@ -54,6 +60,8 @@ var collection := CollectionGuard.new()
 # --- tuning (short in tests, realistic in the twin) ---
 var charge_seconds := 3.0
 var hydrate_seconds := 2.0
+var press_seconds := 4.0        # piston travel from open (chargeDepth) to flush; matches
+                                 # PRESS_S in scripts/actuator_sizing.py (ADR-0019)
 var cook_seconds := 90.0        # thin flatbread, two hot platens (see scripts/cook_energy.py)
 var clean_seconds := 25.0
 var stroke_seconds := 6.0       # present / retract stroke duration (SF5-shaped)
@@ -79,7 +87,11 @@ var face_loaded := true         ## SF8: does the face sensor still see the batch
 
 # --- state ---
 var state: int = State.IDLE
-var progress := 0.0             ## 0 = piston flush/sealed, 1 = piston fully presented at the mouth
+var progress := 0.0             ## 0 = piston flush/sealed, 1 = piston fully presented at the
+                                 ## mouth. Only tracks the PRESENT<->RETRACT delivery stroke;
+                                 ## the CHARGE/HYDRATE<->PRESS travel (open <-> flush) is a
+                                 ## separate axis this twin does not position-track, timed
+                                 ## instead like CHARGE/HYDRATE themselves (ADR-0019).
 var t := 0.0                    ## time in current state
 var sanitized := true           ## surfaces are clean RIGHT NOW (consumed at CHARGE, restored at CLEAN_VERIFY)
 var reclean_count := 0          ## consecutive failed clean-verifies
@@ -178,6 +190,9 @@ func step(delta: float) -> void:
 				_goto(State.HYDRATE)
 		State.HYDRATE:
 			if t >= hydrate_seconds:
+				_goto(State.PRESS)
+		State.PRESS:
+			if t >= press_seconds:
 				_goto(State.COOK)
 		State.COOK:
 			if t >= cook_seconds:

@@ -32,7 +32,9 @@ pdia = s.pistonDia.Value / 1000.0        # m
 area = math.pi * (pdia / 2.0) ** 2        # m^2 piston face
 perim = math.pi * s.boreDia.Value / 1000.0  # m
 lips = int(s.sealLipCount)
-stroke = s.stroke.Value / 1000.0          # m
+close_travel = s.chargeDepth.Value / 1000.0  # m -- open (charge/hydrate) to flush; this
+                                              # IS the forming/press stroke (ADR-0019), not
+                                              # the full present<->clean stroke below it
 
 # forces
 f_form = FORM_KPA * 1000.0 * area                 # press the dough into a thin disc
@@ -43,7 +45,7 @@ f_eject = f_release + f_scrape                     # ejection stroke: peel + scr
 f_design = SAFETY * max(f_close, f_eject)
 
 # speed / power / energy on the forming (demanding) stroke
-v = stroke / PRESS_S
+v = close_travel / PRESS_S
 p_mech = f_close * v
 p_elec = p_mech / ETA
 energy_wh = p_elec * PRESS_S / 3600.0

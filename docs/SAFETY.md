@@ -26,7 +26,7 @@ Risk = Severity (1-4) × Likelihood (1-4). Severity 4 = serious/widespread illne
 | H3 | Spoiled / wet ingredient served | Damp hopper grows mould; spoiled oil | 3 | 2 | 6 | SF6 spoilage lockout (moisture/temp); dry storage (ADR-0012) |
 | H4 | Burn at the mouth | Hot piston face / just-baked bread scalds a hand/mouth | 3 | 3 | 9 | SF4 delivered-surface temperature cap; brief present; edge geometry |
 | H5 | Pinch / crush at the mouth | Hand reaches in as the piston presents | 3 | 2 | 6 | SF4 force cap + safety edge → abort present; SF5 slow final approach |
-| H6 | Contaminant ingress / tampering | Foreign object, fluid, or vandalism pushed into the mouth | 4 | 2? | 8? | Mouth flush + sealed except during present; presence gate; inspect-on-open. **⚠ This mitigation does not currently hold — see ADR-0017. The L=2 score assumed a sealed mouth; with the mouth open for the whole bake it is optimistic and must be re-scored once ADR-0017 is decided.** The *delivery* window is now bounded (SF8, ADR-0018); the *bake* window is the part that is not. |
+| H6 | Contaminant ingress / tampering | Foreign object, fluid, or vandalism pushed into the mouth | 4 | 2? | 8? | Mouth flush + sealed except during present; presence gate; inspect-on-open. **⚠ This mitigation does not currently hold — see ADR-0017. The L=2 score assumed a sealed mouth; it is optimistic and must be re-scored once ADR-0017 is decided.** The *delivery* window is bounded (SF8, ADR-0018); the *bake* window is narrower than it was — ADR-0019 (2026-08-04) decided the piston presses flush right after HYDRATE, so the open-mouth exposure is now CHARGE+HYDRATE+PRESS (~9 s default), not the full ~90 s cook — but it is still open, not sealed, so ADR-0017 remains undecided. |
 | H7 | Cleaning-chemical residue on food surface | A disinfectant (if used) left on the piston face | 4 | 1 | 4 | ADR-0010 thermal+steam, NO per-cycle chemical; if added, a dose+rinse verify + fail-safe |
 | H8 | Foreign body from mechanism wear | Coating flake / seal fragment ends up in the bread | 3 | 2 | 6 | Food-grade materials; SF3 wear budget; inspection; frangible-part exclusion from food path |
 | H9 | Allergen exposure | Wheat/legume allergens inherent to the formula | 3 | 3 | 9 | Clear fixed labelling at the machine; formula is fixed + published (facility-level) |
@@ -167,13 +167,15 @@ does not choose them.
 - **⚠ Mouth is not sealed during the bake (H6, ADR-0017) — OPEN, blocks freezing the bore.**
   Found by drawing the CAD 1:1 (`docs/cell_anatomy.svg`). `MouthDie` is an annulus with a
   Ø156 bore; ADR-0007 bakes against "the heated bore-end/die"; ADR-0001 rules out a separate
-  door or shutter. But the piston sits retracted 60 mm through CHARGE → HYDRATE → COOK, so the
-  mouth is an **open Ø156 hole into the hot chamber for the entire bake**, on a public street.
-  This is not an unimplemented item — it is a stated mitigation that the current geometry
-  contradicts, so H6's risk score is optimistic until it is resolved. Also note the CAD gives
-  no workable hot platen at that end: only the 2 mm annular ledge between die ID and bore ID,
-  which cannot bake a Ø160 disc. Resolution options and trade-offs are in **ADR-0017**; the
-  decision is not yet made.
+  door or shutter. The piston sits retracted 60 mm through CHARGE → HYDRATE, then **presses
+  flush and holds through COOK (ADR-0019, 2026-08-04)** — so the open-mouth window is now
+  CHARGE + HYDRATE + PRESS (~9 s default), not the full ~90 s bake, but it is still a real
+  opening: the bread's own pressed face is what plugs the die, not a mechanical seal. This is
+  not an unimplemented item — it is a stated mitigation that the current geometry contradicts,
+  so H6's risk score is optimistic until it is resolved. Also note the CAD gives no workable hot
+  platen at the die end: only the 2 mm annular ledge between die ID and bore ID, which cannot
+  bake a Ø160 disc — ADR-0019 does not touch this half of the problem. Resolution options and
+  trade-offs are in **ADR-0017**; the decision is not yet made.
 - **SF1 real sensing (ADR-0009/0015):** the F-value target is set (F₇₀ ≥ 13.9 s, 7-log
   *Salmonella*) — what remains is hardware and proof: choose probe parts; validate that they
   read the true geometric **coldest point** (get this wrong and the integral measures the

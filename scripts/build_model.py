@@ -17,6 +17,9 @@ The bore is round (no corners -> best hygiene + easiest full-perimeter scraping)
 whole food-contact story is a cylinder + a flat piston face (ADR-0001, ADR-0003).
 Piston is modelled in the PRESENT/flush pose (face at X=0); motion is a single +X
 translation applied by validate_kinematics.py / the twin, not baked into the geometry.
+Flush (X=0) is also the COOK pose, not just PRESENT's start point: the piston presses
+to flush right after HYDRATE and holds there through the bake (ADR-0019). CHARGE and
+HYDRATE happen with the piston retracted to X=chargeDepth instead, in the open chamber.
 """
 import FreeCAD as App
 import Part
@@ -32,7 +35,8 @@ PARAMS = [
 	("pistonDia",        "=boreDia - 2*runningClearance",      "piston diameter (derived)"),
 	("wallThickness",    "8 mm",    "bore wall (structural + thermal mass) TBD"),
 	("pistonLength",     "120 mm",  "piston depth (resists tilt/jam; houses heater)"),
-	("chargeDepth",      "60 mm",   "piston retract that opens the charge/cook chamber"),
+	("chargeDepth",      "60 mm",   "piston retract that opens the charge+hydrate chamber "
+	                                "-- COOK happens flush, not here (ADR-0019)"),
 	("sterilizeStow",    "150 mm",  "extra retract so the face parks in the sterilize zone"),
 	("stroke",           "=chargeDepth + sterilizeStow", "max piston travel (present<->clean)"),
 	("dieThk",           "10 mm",   "mouth die/peeler ring thickness (proud of the wall)"),

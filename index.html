@@ -166,15 +166,17 @@
   hydration ring, the sterilize zone the face parks in, and the waste chute an unsafe batch
   goes down instead of reaching a person. The cycle strip at right walks one serving end to end,
   and the <strong>mouth detail</strong> below it shows the one part of this machine that is not
-  yet decided.</p>
+  yet sealed.</p>
   <figure class="blueprint">
     <div class="paper">
       <img src="docs/cell_anatomy.svg" width="1400" height="2090" loading="lazy" decoding="async"
         alt="Technical drawing: SeedCell anatomy of one cell — longitudinal section through the cook bore with numbered parts, two cross-section insets, the six-step serve cycle, and a mouth detail comparing the sealed and open states of the delivery mouth.">
     </div>
     <figcaption>Drawn 1:1 from <code>scripts/build_model.py</code>, the source of truth.
-      It also carries the two open questions drawing it exposed — the unsealed mouth during the
-      bake, and the fact that nothing yet decides where the piston sits while the bread bakes.
+      It also carries the open question drawing it exposed — the mouth is not sealed during the
+      bake (ADR-0017). A related question it raised, where the piston sits while the bread bakes,
+      is decided (ADR-0019): the piston presses flush right after hydration and holds through the
+      cook, cutting the open-mouth window from ~90 s to ~9 s.
       <a href="https://github.com/StrayEddy/SeedCell/blob/main/docs/cell_anatomy.svg">Open the full drawing &rsaquo;</a>
     </figcaption>
   </figure>

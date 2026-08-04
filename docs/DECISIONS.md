@@ -738,6 +738,100 @@ for every batch made* — is re-asserted across the new state (scenario S4).
 
 ---
 
+## ADR-0019 — Press before bake: the piston closes the mouth from the inside before COOK, not during it
+**Date:** 2026-08-04
+**Status:** Accepted (twin logic + CAD comments updated; force/power sizing corrected). Does
+**not** decide ADR-0017 — it resolves the prerequisite ADR-0017's addendum named, and narrows
+the number that decision will be made on.
+
+**Context.** ADR-0017's 2026-08-04 addendum found that three artefacts disagreed on where the
+piston sits during CHARGE/HYDRATE/COOK: `build_model.py` implied the piston stays retracted for
+the whole "charge/cook chamber"; `godot/process_interlock.gd` ran CHARGE → HYDRATE → COOK
+without moving the piston at all (silent, not a decision); and the anatomy drawing's cycle strip
+had always drawn the bake already pressed up. The addendum flagged this as a prerequisite to
+deciding ADR-0017, because pressing before the bake — instead of during or after it — collapses
+the open-mouth exposure window from the ~90 s cook to the few seconds of CHARGE + HYDRATE.
+
+**It turns out this was already decided, just not implemented.** Two Accepted ADRs already say
+so in prose:
+- **ADR-0006**: "Dry blend is metered into the bore; then water ... is injected ... **The piston
+  then presses it.**" — press comes after hydrate, as a distinct step.
+- **ADR-0007**: "mix (ADR-0006) + press + cook all happen against the piston face and bore, with
+  no transfer" — press is between mix and cook, and cook does not move the piston again.
+- `scripts/cook_energy.py`'s cook-time/lethality/energy model already assumes
+  `THICKNESS_MM = 8.0  # pressed flatbread thickness (two-sided heating)` for the *entire* bake
+  — it was never modelling an open, unpressed charge cooking.
+
+So the twin's silence and the CAD comment's wording were the bugs, not an open design question.
+This ADR is the paper trail that makes that explicit and fixes the artefacts that drifted.
+
+**Decision.**
+1. **New `PRESS` state** in `godot/process_interlock.gd`, between HYDRATE and COOK: the piston
+   advances from the open charge/hydrate position (`chargeDepth` retracted, 60 mm) to flush
+   (X=0). Timed like CHARGE/HYDRATE (`press_seconds`, no position tracking — the twin only
+   integrates `progress` for the PRESENT↔RETRACT delivery stroke, ADR-0018's territory; charge↔
+   flush travel is a separate axis this twin does not model continuously).
+2. **The piston stays flush through the whole COOK.** Flush is the same X=0 pose already used
+   for IDLE and for the end of PRESENT — COOK does not get its own position, it reuses this one.
+   This is what makes the Ø160 dough disc plug the Ø156 die for the bake: the bread's own
+   pressed face becomes the seal, per ADR-0017 option 4.
+3. **`press_seconds := 4.0`**, matching `PRESS_S` in `scripts/actuator_sizing.py` — the forming
+   stroke duration that script already assumed for force/power sizing. Twin and sizing model now
+   cite the same number instead of coincidentally agreeing.
+4. **`build_model.py`'s `chargeDepth` comment corrected**: "opens the charge+hydrate chamber",
+   not "charge/cook chamber" — COOK never happens at that retracted position.
+
+**Why (quantified).**
+- **Exposure window, before vs after:** CHARGE (3 s) + HYDRATE (2 s) alone was already the
+  addendum's estimate; adding the press motion itself (4 s, since the mouth is not plugged until
+  the disc reaches the die) gives **~9 s** of open mouth per cycle, against the previous **~90 s**
+  (the full `cook_seconds`) — a ~10x reduction. This is most of ADR-0017 option 4's benefit, for
+  the cost of writing down a decision that was already implied.
+- **Chamber sizing sanity check:** the open charge/hydrate chamber is bore ID (164 mm) over
+  `chargeDepth` (60 mm) ≈ 1.27 L. A 220 g dough charge at 700 kg/m³ (`cook_energy.py`'s `RHO`) is
+  ≈ 0.31 L — about a quarter of the open volume, so there is headroom for the hydration jets to
+  work before the press closes on it; nothing about volume forces a different retract depth.
+- **`actuator_sizing.py` was sizing the press stroke wrong.** It computed press-stroke velocity
+  from the *full* `stroke` param (`chargeDepth + sterilizeStow` = 210 mm) instead of the actual
+  press travel, `chargeDepth` alone (60 mm) — the 150 mm `sterilizeStow` leg belongs to
+  PRESENT/RETRACT, not to closing the charge chamber. Fixed (`close_travel`, was `stroke`).
+  Corrected numbers at `PRESS_S = 4.0 s`: **15.0 mm/s** (was 52.5), **32.6 W** (was 114.2),
+  **0.036 Wh/press** (was 0.127) — the forming force (1088 N, unchanged, it doesn't depend on
+  travel distance) is still what sizes the actuator; the old numbers overstated the press's power
+  and energy budget by ~3.5x, though the design-driving force number was never wrong.
+
+**Rejected alternative.**
+- *Leave the piston retracted through COOK* (what the twin's silence and the drawing's stale
+  FLAG 2 both, by omission, left on the table): contradicts ADR-0006 and ADR-0007's own prose,
+  contradicts `cook_energy.py`'s pressed-thickness assumption (the lethality numbers in ADR-0015
+  would be modelling a physical situation that doesn't exist), and leaves the mouth open for the
+  entire ~90 s bake with no compensating benefit — strictly worse on every axis this ADR touches.
+
+**Accepted costs / what this does NOT close.**
+- **This is not ADR-0017.** The mouth still opens for ~9 s per cycle, not zero; the bread's own
+  face becomes the public-facing seal for the whole bake, which is its own hygiene question
+  (already flagged under ADR-0017 option 4); and the 2 mm effective platen contact ring (ADR-0017
+  addendum (a)) is untouched — a 2 mm ring still cannot conduction-bake a Ø160 disc regardless of
+  when the press happens. ADR-0017 stays **OPEN**; this ADR only fixes the number its options are
+  scored against.
+- **The PRESS motion itself is new physical work with no bench validation**: how fast a piston
+  can close a 60 mm gap on loose hydrated dough without splattering it back out through the mouth
+  or the hydration ports is an open engineering question, not asserted here — `press_seconds` is
+  a placeholder tied to the existing (also unvalidated) `PRESS_S` sizing assumption, not a
+  measured number.
+- **The anatomy drawing (`docs/cell_anatomy.svg`) FLAG 2 and panel B caption**, which stated this
+  question as open, are updated to point here rather than redrawing the cycle strip with a
+  seventh panel — a full redraw is deferred, tracked informally, not a ROADMAP line yet.
+
+**Implementation.** `godot/process_interlock.gd` (`PRESS` state + `press_seconds`, comments on
+CHARGE/HYDRATE/COOK/`progress`); `godot/tests/test_interlock.gd`,
+`godot/tests/test_spore_hold.gd`, `godot/tests/test_collection.gd` (`press_seconds` added to
+short test timings); `scripts/build_model.py` (comment fix); `scripts/actuator_sizing.py`
+(`close_travel` replaces the misapplied `stroke`). All six Godot self-test suites re-run and
+pass. ROADMAP Now #3 and SAFETY.md's H6 open item updated to the narrower window.
+
+---
+
 ## Component tree (one cell) — reference for ADR-0001
 
 1. Structure/enclosure: fixed heated `CookBarrel` (bore), wall-interface flange & trim,

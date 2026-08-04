@@ -52,6 +52,7 @@ func _new_pi():
 	# short timings so the test runs fast
 	pi.charge_seconds = 0.2
 	pi.hydrate_seconds = 0.2
+	pi.press_seconds = 0.2
 	pi.cook_seconds = 0.3
 	pi.clean_seconds = 0.3
 	pi.stroke_seconds = 0.3

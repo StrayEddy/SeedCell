@@ -263,7 +263,7 @@
       <text x="955" y="-14" class="fnname">3 · COOK</text>
       <text x="955" y="2" class="fntext">The piston presses the dough to 8 mm between two 230 °C</text>
       <text x="955" y="16" class="fntext">platens — the die end and the piston face. Both sides at once.</text>
-      <text x="955" y="30" class="flag">⚠ Drawn pressed-up, but nothing decides that — see flag 2 below.</text>
+      <text x="955" y="30" class="dim">Pressed right after HYDRATE, holds through COOK (ADR-0019).</text>
     </g>
     <!-- 4 PRESENT -->
     <g transform="translate(0,745)">
@@ -346,9 +346,9 @@
     <path d="M-54,54 A76,76 0 0,0 54,54 C37,41 -37,41 -54,54 Z" class="blend" opacity=".9"/>
     <text x="0" y="-14" style="font-size:11px;fill:#f2cfae" text-anchor="middle">open Ø156 hole</text>
     <text x="0" y="1" style="font-size:11px;fill:#f2cfae" text-anchor="middle">into a 230 °C chamber</text>
-    <text x="0" y="110" class="dim" text-anchor="middle">What the CAD actually does through CHARGE and</text>
-    <text x="0" y="124" class="dim" text-anchor="middle">HYDRATE — and, per ADR-0017, for the whole</text>
-    <text x="0" y="138" class="dim" text-anchor="middle">~90 s bake. On a public street.</text>
+    <text x="0" y="110" class="dim" text-anchor="middle">What the CAD does through CHARGE and</text>
+    <text x="0" y="124" class="dim" text-anchor="middle">HYDRATE (~5 s) — then PRESS closes it before</text>
+    <text x="0" y="138" class="dim" text-anchor="middle">COOK (ADR-0019). ~9 s open, not ~90 s.</text>
   </g>
 
   <!-- C: die corner at 8:1.  y(r) = 1360 - (r-70)*8 ;  x(X) = 640 + (X+14)*8 -->
@@ -412,10 +412,10 @@
   <text x="40" y="1487" class="flag">the piston is retracted the mouth is an open hole into the hot chamber (view B). That contradicts hazard H6, whose stated mitigation is "mouth flush + sealed except during present" —</text>
   <text x="40" y="1502" class="flag">a stated mitigation the geometry does not deliver, which is a worse class of problem than an unimplemented one. The CAD also gives no workable lower platen at that end (section C).</text>
 
-  <text x="40" y="1528" class="flag"><tspan class="flagb">FLAG 2 — there is no PRESS step anywhere, so "where is the piston during the bake?" is undecided.</tspan> Three artefacts disagree: build_model.py calls chargeDepth "the piston</text>
-  <text x="40" y="1543" class="flag">retract that opens the charge/cook chamber" (60 mm open); ADR-0007 presses the dough to 8 mm between two platens; the twin runs CHARGE → HYDRATE → COOK without moving the piston</text>
-  <text x="40" y="1558" class="flag">at all, and cycle panel 3 draws the bake already pressed up. Not cosmetic: if the press happens BEFORE the bake, the dough disc plugs the die and the exposure window is a few seconds</text>
-  <text x="40" y="1573" class="flag">rather than ~90 s — which is most of ADR-0017's option 4, for free. Found while drawing this sheet. Nothing in the repo currently decides it.</text>
+  <text x="40" y="1528" class="flag"><tspan class="flagb">FLAG 2 — RESOLVED (ADR-0019, 2026-08-04): the piston presses flush right after HYDRATE and holds through COOK.</tspan> Found while drawing this sheet that three artefacts</text>
+  <text x="40" y="1543" class="flag">disagreed on this: build_model.py's chargeDepth comment implied the piston stayed retracted for the cook too; the twin ran CHARGE → HYDRATE → COOK without moving the piston at</text>
+  <text x="40" y="1558" class="flag">all (silent, not a decision); only cycle panel 3 already drew the bake pressed up. It turns out ADR-0006 ("the piston then presses it") and ADR-0007 ("mix + press + cook, no</text>
+  <text x="40" y="1573" class="flag">transfer") already said this in prose — the artefacts had drifted, not the design. Exposure window: ~9 s (CHARGE+HYDRATE+PRESS), not ~90 s. Does not decide ADR-0017 — see FLAG 1.</text>
 
   <!-- ===================== LEGEND ===================== -->
   <line x1="40" y1="1600" x2="1360" y2="1600" stroke="#d7dbe1" stroke-width="1"/>
