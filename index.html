@@ -38,6 +38,13 @@
   .hero-media img{width:100%;height:auto;display:block;border:1px solid var(--border);
     border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,.45)}
   .hero-media figcaption{margin:10px 2px 0;color:var(--muted);font-size:12.5px}
+  /* technical drawing: white paper on the dark page, scrollable on small screens */
+  .blueprint{margin:0;background:#fff;border:1px solid var(--border);border-radius:12px;
+    padding:16px;box-shadow:0 24px 70px rgba(0,0,0,.5)}
+  .blueprint .paper{overflow-x:auto}
+  .blueprint img{width:100%;min-width:820px;display:block;border-radius:4px}
+  .blueprint figcaption{color:#5a6270;font-size:12.5px;margin-top:12px;text-align:center}
+  .blueprint figcaption a{color:#1f6feb}
   section{padding:48px 0;border-bottom:1px solid var(--border)}
   h2{font-size:26px;margin:0 0 8px} .lead{color:var(--muted);margin:0 0 24px;max-width:680px}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
@@ -69,6 +76,7 @@
   <div class="links">
     <a href="#what">What</a>
     <a href="#how">Mechanism</a>
+    <a href="#anatomy">Anatomy</a>
     <a href="#food">Food</a>
     <a href="#safety">Safety</a>
     <a href="#hygiene">Hygiene</a>
@@ -149,6 +157,24 @@
       </div>
     </div>
   </div>
+</div></section>
+
+<section id="anatomy"><div class="wrap">
+  <h2>Anatomy of one cell</h2>
+  <p class="lead">Every part labelled, drawn 1:1 from the parametric CAD — the fixed heated bore
+  and its single piston, the scraper lips that squeegee the bore on every stroke, the jet
+  hydration ring, the sterilize zone the face parks in, and the waste chute an unsafe batch
+  goes down instead of reaching a person. The cycle strip at right walks one serving end to end.</p>
+  <figure class="blueprint">
+    <div class="paper">
+      <img src="docs/cell_anatomy.svg" width="1400" height="1420" loading="lazy" decoding="async"
+        alt="Technical drawing: SeedCell anatomy of one cell — longitudinal section through the cook bore with numbered parts, two cross-section insets, and the five-step serve cycle.">
+    </div>
+    <figcaption>Drawn 1:1 from <code>scripts/build_model.py</code>, the source of truth.
+      The drawing also carries an open question it exposed — see the note above the legend.
+      <a href="https://github.com/StrayEddy/SeedCell/blob/main/docs/cell_anatomy.svg">Open the full drawing &rsaquo;</a>
+    </figcaption>
+  </figure>
 </div></section>
 
 <section id="food"><div class="wrap">

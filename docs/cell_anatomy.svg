@@ -1,0 +1,380 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1420" viewBox="0 0 1400 1420">
+  <style>
+    text{font-family:'DejaVu Sans','Helvetica',Arial,sans-serif}
+    .title{font-size:23px;font-weight:bold;fill:#161a20}
+    .sub{font-size:13px;fill:#5a6270}
+    .small{font-size:11px;fill:#3a4049}
+    .dim{font-size:11px;fill:#7a818c}
+    .grphdr{font-size:13.5px;font-weight:bold;fill:#161a20}
+    .fnname{font-size:12.5px;font-weight:bold;fill:#161a20}
+    .fntext{font-size:12px;fill:#3a4049}
+    .wall{fill:#c9ccd1;stroke:#5f646d;stroke-width:1.5}
+    .bore{fill:#fdf7ee}
+    .piston{fill:#9fb0c6;stroke:#39465e;stroke-width:1.6}
+    .hot{fill:#e0572f}
+    .seal{fill:#e0572f;stroke:#8f3218;stroke-width:.6}
+    .ring{fill:#cfd6de;stroke:#5f646d;stroke-width:1.2}
+    .hopper{fill:#f4eee2;stroke:#a98c5f;stroke-width:1.4}
+    .plant{fill:#dfe3e8;stroke:#5f646d;stroke-width:1.3}
+    .waste{fill:#ded3c4;stroke:#8a7a55;stroke-width:1.3}
+    .blend{fill:#e8d5a8;stroke:#b8944e;stroke-width:1}
+    .bread{fill:#d99a4e;stroke:#a9702f;stroke-width:1.1}
+    .leader{stroke:#8b929c;stroke-width:1}
+    .water{stroke:#2f8fd6;stroke-width:1.6;fill:none}
+    .axis{stroke:#39465e;stroke-width:1.5}
+    .ghost{fill:none;stroke:#39465e;stroke-width:1.2;stroke-dasharray:6 4;opacity:.55}
+    .cut{stroke:#39465e;stroke-width:1.1;stroke-dasharray:5 4}
+    .dimline{stroke:#7a818c;stroke-width:.9}
+  </style>
+
+  <defs>
+    <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#39465e"/>
+    </marker>
+    <marker id="jet" markerWidth="8" markerHeight="8" refX="6" refY="2.5" orient="auto">
+      <path d="M0,0 L6,2.5 L0,5 Z" fill="#2f8fd6"/>
+    </marker>
+    <marker id="dimarr" markerWidth="8" markerHeight="8" refX="6" refY="2.5" orient="auto">
+      <path d="M0,0 L6,2.5 L0,5 Z" fill="#7a818c"/>
+    </marker>
+    <pattern id="hatch" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="7" height="7" fill="#c9ccd1"/>
+      <line x1="0" y1="0" x2="0" y2="7" stroke="#7d838d" stroke-width="1.1"/>
+    </pattern>
+  </defs>
+
+  <rect x="0" y="0" width="1400" height="1420" fill="#ffffff"/>
+
+  <!-- ===================== HEADER ===================== -->
+  <text x="40" y="40" class="title">SeedCell — anatomy of one cell</text>
+  <text x="40" y="61" class="sub">Longitudinal section through the cook bore, drawn 1:1 from the parametric CAD (scripts/build_model.py — the source of truth). One cell = a fixed heated tube bored through a wall, with a single piston.</text>
+  <text x="40" y="78" class="sub">Piston shown in the CHARGE pose (retracted 60 mm, cook chamber open). It has four working poses — charge · cook · present · clean — shown in the cycle strip at right.</text>
+  <text x="40" y="95" class="sub">The piston face is simultaneously the flush public wall, the upper cook platen, the ejector, and the surface that parks in the sterilize zone. That is the whole machine (ADR-0001).</text>
+
+  <!-- travel-axis arrow -->
+  <line x1="190" y1="118" x2="700" y2="118" class="axis" marker-end="url(#arr)"/>
+  <text x="445" y="112" class="small" text-anchor="middle">+X  →  piston travel: present/flush (X=0) ⟶ clean/stow (X=210 mm)</text>
+
+  <!-- ===================== LONGITUDINAL SECTION ===================== -->
+  <!-- scale 1 px = 1 mm ; bore axis at y=530 ; X=0 at x=150 -->
+
+  <!-- public wall plane (the machine is set into it; everything X>0 is behind the wall) -->
+  <rect x="138" y="130" width="14" height="310" fill="url(#hatch)" stroke="#5f646d" stroke-width="1.2"/>
+  <rect x="138" y="620" width="14" height="200" fill="url(#hatch)" stroke="#5f646d" stroke-width="1.2"/>
+  <text x="128" y="150" class="small" fill="#8a6d3b" text-anchor="end">◀ PUBLIC / STREET</text>
+  <text x="490" y="132" class="small" fill="#8a6d3b">SERVICE / BACK-OF-HOUSE ▶</text>
+
+  <!-- dry-ingredient hoppers (sealed, dry: nothing to clean) -->
+  <rect x="180" y="130" width="260" height="300" class="hopper"/>
+  <text x="310" y="215" class="small" text-anchor="middle" fill="#7a6440">SEALED DRY STORAGE</text>
+  <text x="310" y="231" class="dim" text-anchor="middle">flour · legume · salt · oil</text>
+  <text x="310" y="247" class="dim" text-anchor="middle">dry = no wet surface to sanitize</text>
+  <!-- metered charge port down into the bore -->
+  <rect x="178" y="430" width="16" height="18" fill="#fff" stroke="#a98c5f" stroke-width="1.2"/>
+  <line x1="186" y1="432" x2="186" y2="470" class="leader" marker-end="url(#arr)"/>
+
+  <!-- service plant envelope -->
+  <rect x="480" y="350" width="220" height="360" class="plant"/>
+  <text x="590" y="500" class="small" text-anchor="middle" fill="#4a505a">SERVICE PLANT</text>
+  <text x="590" y="516" class="dim" text-anchor="middle">drive · heaters · steam</text>
+  <text x="590" y="532" class="dim" text-anchor="middle">generator · dosers</text>
+
+  <!-- waste chute (the divert path — an unsafe batch never reaches the mouth) -->
+  <rect x="210" y="612" width="90" height="140" class="waste"/>
+  <text x="255" y="700" class="small" text-anchor="middle" fill="#6b5c3c">WASTE</text>
+  <line x1="255" y1="600" x2="255" y2="640" class="leader" marker-end="url(#arr)"/>
+
+  <!-- bore void -->
+  <rect x="150" y="448" width="330" height="164" class="bore"/>
+
+  <!-- barrel walls (top + bottom bands of the section) -->
+  <rect x="150" y="440" width="330" height="8" class="wall"/>
+  <rect x="150" y="612" width="330" height="8" class="wall"/>
+
+  <!-- heated bore-end platen (ADR-0007). The die is an ANNULUS: its hot face is only the
+       2 mm ledge between die ID 156 and bore ID 164. The mouth itself is open. -->
+  <rect x="147" y="448" width="4" height="4" class="hot"/>
+  <rect x="147" y="608" width="4" height="4" class="hot"/>
+  <text x="146" y="530" class="dim" text-anchor="middle" transform="rotate(-90 146 530)">MOUTH Ø156 — OPEN</text>
+
+  <!-- mouth die: hardened peeler ring, proud of the wall, ID smaller than the piston -->
+  <rect x="140" y="440" width="10" height="12" class="wall"/>
+  <rect x="140" y="608" width="10" height="12" class="wall"/>
+
+  <!-- hydration ring (jet injection mixing — no blade) -->
+  <rect x="190" y="437" width="12" height="9" class="ring"/>
+  <rect x="190" y="614" width="12" height="9" class="ring"/>
+  <path d="M196,446 C190,480 180,530 172,566" class="water" marker-end="url(#jet)"/>
+  <path d="M196,614 C190,596 182,578 174,566" class="water" marker-end="url(#jet)"/>
+
+  <!-- hot-air knife (dry step) -->
+  <rect x="316" y="438" width="10" height="8" class="ring"/>
+  <rect x="316" y="614" width="10" height="8" class="ring"/>
+
+  <!-- sterilize ring (steam / hot water) -->
+  <rect x="340" y="437" width="14" height="9" class="ring"/>
+  <rect x="340" y="614" width="14" height="9" class="ring"/>
+
+  <!-- metered dry charge sitting in the open cook chamber -->
+  <path d="M152,612 L208,612 L208,596 C196,580 176,580 164,592 L152,600 Z" class="blend"/>
+
+  <!-- piston, CHARGE pose: face at X=60 mm -->
+  <rect x="210" y="450" width="120" height="160" class="piston"/>
+  <rect x="210" y="450" width="4" height="160" class="hot"/>
+  <text x="272" y="536" class="small" text-anchor="middle" fill="#20242b">PISTON</text>
+  <text x="272" y="551" class="dim" text-anchor="middle">heated face</text>
+
+  <!-- scraper lips (SF3) — shown exaggerated; true lip is 2 mm radial x 4 mm axial -->
+  <rect x="216" y="444" width="4" height="8" class="seal"/>
+  <rect x="216" y="608" width="4" height="8" class="seal"/>
+  <rect x="324" y="444" width="4" height="8" class="seal"/>
+  <rect x="324" y="608" width="4" height="8" class="seal"/>
+
+  <!-- ghost: clean/stow pose, face parked at the sterilize ring (X=210 mm) -->
+  <rect x="360" y="450" width="120" height="160" class="ghost"/>
+  <text x="420" y="536" class="dim" text-anchor="middle">clean / stow pose</text>
+  <text x="420" y="550" class="dim" text-anchor="middle">(face at X = 210)</text>
+
+  <!-- stroke dimension -->
+  <line x1="210" y1="775" x2="360" y2="775" class="dimline" marker-start="url(#dimarr)" marker-end="url(#dimarr)"/>
+  <text x="285" y="770" class="dim" text-anchor="middle">stroke 210</text>
+  <line x1="150" y1="735" x2="210" y2="735" class="dimline" marker-start="url(#dimarr)" marker-end="url(#dimarr)"/>
+  <text x="180" y="730" class="dim" text-anchor="middle">charge 60</text>
+  <line x1="150" y1="800" x2="480" y2="800" class="dimline" marker-start="url(#dimarr)" marker-end="url(#dimarr)"/>
+  <text x="315" y="795" class="dim" text-anchor="middle">barrel 330</text>
+
+  <!-- section cut marks for A-A / B-B -->
+  <line x1="255" y1="424" x2="255" y2="436" class="cut"/>
+  <text x="255" y="419" class="dim" text-anchor="middle">A</text>
+  <line x1="347" y1="424" x2="347" y2="436" class="cut"/>
+  <text x="347" y="419" class="dim" text-anchor="middle">B</text>
+
+  <!-- ===================== CALLOUT NUMBERS ===================== -->
+  <g font-size="12.5" font-weight="bold">
+    <g><circle cx="455" cy="415" r="11" fill="#2b3a55"/><text x="455" y="419" fill="#fff" text-anchor="middle">1</text><line x1="455" y1="426" x2="455" y2="440" class="leader"/></g>
+    <g><circle cx="300" cy="580" r="11" fill="#2b3a55"/><text x="300" y="584" fill="#fff" text-anchor="middle">2</text></g>
+    <g><circle cx="252" cy="404" r="11" fill="#2b3a55"/><text x="252" y="408" fill="#fff" text-anchor="middle">3</text><line x1="245" y1="412" x2="221" y2="443" class="leader"/></g>
+    <g><circle cx="112" cy="466" r="11" fill="#2b3a55"/><text x="112" y="470" fill="#fff" text-anchor="middle">4</text><line x1="123" y1="463" x2="139" y2="452" class="leader"/></g>
+    <g><circle cx="196" cy="398" r="11" fill="#2b3a55"/><text x="196" y="402" fill="#fff" text-anchor="middle">5</text><line x1="196" y1="409" x2="196" y2="437" class="leader"/></g>
+    <g><circle cx="398" cy="398" r="11" fill="#2b3a55"/><text x="398" y="402" fill="#fff" text-anchor="middle">6</text><line x1="390" y1="406" x2="354" y2="437" class="leader"/></g>
+    <g><circle cx="321" cy="398" r="11" fill="#2b3a55"/><text x="321" y="402" fill="#fff" text-anchor="middle">7</text><line x1="321" y1="409" x2="321" y2="438" class="leader"/></g>
+    <g><circle cx="255" cy="730" r="11" fill="#2b3a55"/><text x="255" y="734" fill="#fff" text-anchor="middle">8</text></g>
+    <g><circle cx="310" cy="170" r="11" fill="#2b3a55"/><text x="310" y="174" fill="#fff" text-anchor="middle">9</text></g>
+    <g><circle cx="590" cy="440" r="11" fill="#2b3a55"/><text x="590" y="444" fill="#fff" text-anchor="middle">10</text></g>
+    <g><circle cx="118" cy="392" r="11" fill="#2b3a55"/><text x="118" y="396" fill="#fff" text-anchor="middle">11</text><line x1="129" y1="392" x2="145" y2="392" class="leader"/></g>
+    <g><circle cx="262" cy="476" r="11" fill="#2b3a55"/><text x="262" y="480" fill="#fff" text-anchor="middle">12</text><line x1="255" y1="484" x2="222" y2="500" class="leader"/></g>
+  </g>
+  <!-- status beacon glyph on the public face -->
+  <circle cx="150" cy="392" r="5" fill="#3fb950" stroke="#2a7a38" stroke-width="1"/>
+
+  <!-- ===================== A-A CROSS SECTION INSET ===================== -->
+  <g transform="translate(850,250)">
+    <text x="0" y="-108" class="small" text-anchor="middle" fill="#39465e">A–A  (cook bore, through a scraper lip)</text>
+    <circle cx="0" cy="0" r="90" class="wall"/>
+    <circle cx="0" cy="0" r="82" fill="#fdf7ee" stroke="#5f646d" stroke-width="1.2"/>
+    <circle cx="0" cy="0" r="80" class="piston"/>
+    <circle cx="0" cy="0" r="81" fill="none" stroke="#e0572f" stroke-width="2.4"/>
+    <text x="0" y="4" class="small" text-anchor="middle" fill="#20242b">piston Ø160</text>
+    <text x="0" y="112" class="dim" text-anchor="middle">bore Ø164 · wall 8 · running clearance 2 (mm)</text>
+    <text x="0" y="127" class="dim" text-anchor="middle">ROUND: no corners, no seams — the scraper lip</text>
+    <text x="0" y="141" class="dim" text-anchor="middle">wipes the whole perimeter on every stroke</text>
+  </g>
+
+  <!-- ===================== B-B CROSS SECTION INSET ===================== -->
+  <g transform="translate(1160,250)">
+    <text x="0" y="-108" class="small" text-anchor="middle" fill="#39465e">B–B  (sterilize zone, piston stowed)</text>
+    <circle cx="0" cy="0" r="93" fill="#cfd6de" stroke="#5f646d" stroke-width="1.2"/>
+    <circle cx="0" cy="0" r="84" class="wall"/>
+    <circle cx="0" cy="0" r="82" fill="#fdf7ee" stroke="#5f646d" stroke-width="1.2"/>
+    <circle cx="0" cy="0" r="80" class="piston"/>
+    <g stroke="#2f8fd6" stroke-width="1.6" fill="none">
+      <path d="M0,-88 L0,-82" marker-end="url(#jet)"/>
+      <path d="M62,-62 L58,-58" marker-end="url(#jet)"/>
+      <path d="M88,0 L82,0" marker-end="url(#jet)"/>
+      <path d="M62,62 L58,58" marker-end="url(#jet)"/>
+      <path d="M0,88 L0,82" marker-end="url(#jet)"/>
+      <path d="M-62,62 L-58,58" marker-end="url(#jet)"/>
+      <path d="M-88,0 L-82,0" marker-end="url(#jet)"/>
+      <path d="M-62,-62 L-58,-58" marker-end="url(#jet)"/>
+    </g>
+    <text x="0" y="112" class="dim" text-anchor="middle">steam / hot-water ring surrounds the stowed face</text>
+    <text x="0" y="127" class="dim" text-anchor="middle">both food-contact surfaces cleaned in one place,</text>
+    <text x="0" y="141" class="dim" text-anchor="middle">sealed away from the public side (ADR-0010)</text>
+  </g>
+
+  <!-- ===================== PROCESS CYCLE STRIP ===================== -->
+  <text x="760" y="418" class="grphdr">THE CYCLE — one serving, one chamber, one transfer</text>
+  <line x1="760" y1="430" x2="1360" y2="430" stroke="#d7dbe1" stroke-width="1"/>
+
+  <!-- mini-section helper geometry: scale 0.5, barrel x 770..935 -->
+  <g>
+    <!-- 1 CHARGE -->
+    <g transform="translate(0,470)">
+      <rect x="770" y="-41" width="165" height="82" fill="#fdf7ee"/>
+      <rect x="770" y="-45" width="165" height="4" class="wall"/>
+      <rect x="770" y="41" width="165" height="4" class="wall"/>
+      <rect x="765" y="-45" width="5" height="90" class="wall"/>
+      <rect x="800" y="-40" width="60" height="80" class="piston"/>
+      <path d="M772,41 L798,41 L798,30 C788,22 780,26 772,34 Z" class="blend"/>
+      <line x1="785" y1="-60" x2="785" y2="-46" class="leader" marker-end="url(#arr)"/>
+      <text x="955" y="-14" class="fnname">1 · CHARGE</text>
+      <text x="955" y="2" class="fntext">Piston retracts 60 mm. A metered dry blend drops from the</text>
+      <text x="955" y="16" class="fntext">sealed hoppers into the open chamber. Surfaces now dirty.</text>
+    </g>
+    <!-- 2 HYDRATE -->
+    <g transform="translate(0,560)">
+      <rect x="770" y="-41" width="165" height="82" fill="#fdf7ee"/>
+      <rect x="770" y="-45" width="165" height="4" class="wall"/>
+      <rect x="770" y="41" width="165" height="4" class="wall"/>
+      <rect x="765" y="-45" width="5" height="90" class="wall"/>
+      <rect x="800" y="-40" width="60" height="80" class="piston"/>
+      <path d="M772,41 L798,41 L798,26 C788,16 780,20 772,30 Z" class="blend"/>
+      <path d="M790,-41 C784,-24 780,-6 777,10" class="water" marker-end="url(#jet)"/>
+      <path d="M790,41 C784,30 782,20 779,12" class="water" marker-end="url(#jet)"/>
+      <text x="955" y="-14" class="fnname">2 · HYDRATE</text>
+      <text x="955" y="2" class="fntext">Water + oil are injected as jets that do the mixing. No blade,</text>
+      <text x="955" y="16" class="fntext">no mixer bowl — nothing extra to clean (ADR-0006).</text>
+    </g>
+    <!-- 3 COOK -->
+    <g transform="translate(0,650)">
+      <rect x="770" y="-41" width="165" height="82" fill="#fdf7ee"/>
+      <rect x="770" y="-45" width="165" height="4" class="wall"/>
+      <rect x="770" y="41" width="165" height="4" class="wall"/>
+      <rect x="765" y="-45" width="5" height="90" class="wall"/>
+      <rect x="765" y="-40" width="3" height="80" class="hot"/>
+      <rect x="778" y="-40" width="60" height="80" class="piston"/>
+      <rect x="778" y="-40" width="3" height="80" class="hot"/>
+      <rect x="770" y="-40" width="8" height="80" class="bread"/>
+      <text x="955" y="-14" class="fnname">3 · COOK</text>
+      <text x="955" y="2" class="fntext">The piston presses the dough to 8 mm between two 230 °C</text>
+      <text x="955" y="16" class="fntext">platens — the die end and the piston face. Both sides at once.</text>
+    </g>
+    <!-- 4 PRESENT -->
+    <g transform="translate(0,740)">
+      <rect x="770" y="-41" width="165" height="82" fill="#fdf7ee"/>
+      <rect x="770" y="-45" width="165" height="4" class="wall"/>
+      <rect x="770" y="41" width="165" height="4" class="wall"/>
+      <rect x="765" y="-45" width="5" height="90" class="wall"/>
+      <rect x="770" y="-40" width="60" height="80" class="piston"/>
+      <rect x="750" y="-38" width="8" height="76" class="bread"/>
+      <line x1="764" y1="0" x2="760" y2="0" class="axis" marker-end="url(#arr)"/>
+      <text x="955" y="-14" class="fnname">4 · PRESENT  — gated, never automatic</text>
+      <text x="955" y="2" class="fntext">Only if SF1 proves the kill-step AND SF7 proves the batch is not</text>
+      <text x="955" y="16" class="fntext">stale AND SF2 proved the surfaces clean. The die shears the rim</text>
+      <text x="955" y="30" class="fntext">free; the face returns flush. Any doubt ⇒ waste, not a person.</text>
+    </g>
+    <!-- 5 CLEAN -->
+    <g transform="translate(0,845)">
+      <rect x="770" y="-41" width="165" height="82" fill="#fdf7ee"/>
+      <rect x="770" y="-45" width="165" height="4" class="wall"/>
+      <rect x="770" y="41" width="165" height="4" class="wall"/>
+      <rect x="765" y="-45" width="5" height="90" class="wall"/>
+      <rect x="875" y="-40" width="60" height="80" class="piston"/>
+      <rect x="862" y="-46" width="8" height="10" class="ring"/>
+      <rect x="862" y="36" width="8" height="10" class="ring"/>
+      <path d="M866,-36 L870,-20" class="water" marker-end="url(#jet)"/>
+      <path d="M866,36 L870,20" class="water" marker-end="url(#jet)"/>
+      <text x="955" y="-14" class="fnname">5 · CLEAN</text>
+      <text x="955" y="2" class="fntext">The face parks deep in the sealed sterilize zone: scrape (the lips</text>
+      <text x="955" y="16" class="fntext">wiped the bore on the way past), steam, reused bake heat, dry.</text>
+      <text x="955" y="30" class="fntext">Verified clean, or re-clean; three failures ⇒ lockout.</text>
+    </g>
+  </g>
+
+  <!-- key dimensions strip -->
+  <text x="40" y="900" class="dim">Key dims (mm): flatbread Ø160 × 8 · bore Ø164 · piston Ø160 · wall 8 · running clearance 2 (2 scraper lips bridge it) · barrel 330 · piston 120 · charge depth 60 · sterilize stow 150 · stroke 210 · die 10 thk, Ø156 bore · platens 230 °C</text>
+  <text x="40" y="934" style="font-size:11.5px;fill:#b3541e"><tspan font-weight="bold">OPEN QUESTION (found while drawing this):</tspan> the mouth die is a Ø156 ring and ADR-0001 rules out a separate door, so during CHARGE / HYDRATE / COOK — while the piston is retracted 60 mm —</text>
+  <text x="40" y="949" style="font-size:11.5px;fill:#b3541e">the mouth is an open Ø156 hole into the hot chamber. That contradicts hazard H6, whose stated mitigation is "mouth flush + sealed except during present".</text>
+  <text x="40" y="964" style="font-size:11.5px;fill:#b3541e">Either the cook chamber has to move deeper than the die, or something has to close the mouth during the bake. Not yet decided — drawn here as the CAD actually is.</text>
+  <text x="40" y="917" class="dim">Drawn 1:1 from scripts/build_model.py. Scraper lips are shown exaggerated for legibility (true lip: 2 mm radial × 4 mm axial). Hoppers, waste chute and service plant are space-claim envelopes, not detailed.</text>
+
+  <!-- ===================== LEGEND ===================== -->
+  <line x1="40" y1="984" x2="1360" y2="984" stroke="#d7dbe1" stroke-width="1"/>
+
+  <!-- column 1 -->
+  <text x="40" y="1010" class="grphdr">STRUCTURE &amp; MOTION</text>
+  <g transform="translate(40,1024)">
+    <text x="0" y="16" class="fnname">1 · CookBarrel — the fixed heated bore</text>
+    <text x="0" y="32" class="fntext">A stationary tube through the wall, open at both ends: the</text>
+    <text x="0" y="46" class="fntext">mouth at X=0, the service side at X=330. Its far end is the</text>
+    <text x="0" y="60" class="fntext">lower cook platen. Round, so there is no corner to harbour</text>
+    <text x="0" y="74" class="fntext">residue and nothing the scraper cannot reach.</text>
+
+    <text x="0" y="102" class="fnname">2 · Piston — the ONE moving part</text>
+    <text x="0" y="118" class="fntext">Its face is four things at once: the flush public wall when</text>
+    <text x="0" y="132" class="fntext">closed, the upper cook platen, the ejector that delivers the</text>
+    <text x="0" y="146" class="fntext">bread, and the surface that parks in the sterilize zone. One</text>
+    <text x="0" y="160" class="fntext">heated moving part means one thing to clean, one to fail.</text>
+
+    <text x="0" y="188" class="fnname">3 · ScraperSeals (SF3) — 2 lip rings</text>
+    <text x="0" y="204" class="fntext">Compliant lips on the piston perimeter that bridge the 2 mm</text>
+    <text x="0" y="218" class="fntext">running gap. They squeegee the full bore on every stroke and</text>
+    <text x="0" y="232" class="fntext">separate the public side from the sealed service side.</text>
+
+    <text x="0" y="260" class="fnname">4 · MouthDie — peeler + hard stop</text>
+    <text x="0" y="274" class="fntext">Fixed hardened ring, proud of the wall. Its Ø156 bore is</text>
+    <text x="0" y="288" class="fntext">smaller than the Ø160 piston, so it shears the bread rim free</text>
+    <text x="0" y="302" class="fntext">on ejection and mechanically stops the piston at flush.</text>
+  </g>
+
+  <!-- column 2 -->
+  <text x="490" y="1010" class="grphdr">FOOD PATH &amp; CLEANING</text>
+  <g transform="translate(490,1024)">
+    <text x="0" y="16" class="fnname">9 · DryStorage (SF6) — sealed hoppers</text>
+    <text x="0" y="32" class="fntext">Everything upstream of the bore stays DRY: flour, legume,</text>
+    <text x="0" y="46" class="fntext">salt, oil. A dry surface does not grow anything, so it never</text>
+    <text x="0" y="60" class="fntext">needs sanitizing — the cheapest hygiene there is (ADR-0012).</text>
+
+    <text x="0" y="88" class="fnname">5 · HydrationRing — jets, not a blade</text>
+    <text x="0" y="102" class="fntext">Injects water + oil hard enough to do the mixing. Deleting the</text>
+    <text x="0" y="116" class="fntext">mixer deletes a bowl, a shaft, a seal and a cleaning problem.</text>
+
+    <text x="0" y="144" class="fnname">6 · SterilizeRing / 7 · HotAirKnife (SF2)</text>
+    <text x="0" y="158" class="fntext">Steam and hot water sanitize the stowed piston face and the</text>
+    <text x="0" y="172" class="fntext">bore around it, reusing bake heat; the air knife then dries</text>
+    <text x="0" y="186" class="fntext">both. No per-cycle chemical to leave a residue on food.</text>
+
+    <text x="0" y="214" class="fnname">8 · WasteChute — the divert path</text>
+    <text x="0" y="228" class="fntext">Where a batch goes when it cannot be proven safe. It is a</text>
+    <text x="0" y="242" class="fntext">real, physical branch: there is no code path from a failed</text>
+    <text x="0" y="256" class="fntext">check to the mouth.</text>
+
+    <text x="0" y="284" class="fnname">10 · ServicePlant · 11 · Beacon · 12 · Probes</text>
+    <text x="0" y="298" class="fntext">Back-of-house drive, heaters, steam generator and dosers. The</text>
+    <text x="0" y="312" class="fntext">beacon is the only public control surface — no buttons, no</text>
+    <text x="0" y="326" class="fntext">handles. SF1's probes read the dough core and crust.</text>
+  </g>
+
+  <!-- column 3 -->
+  <text x="940" y="1010" class="grphdr">SAFETY FUNCTIONS — what must be true to serve</text>
+  <g transform="translate(940,1024)">
+    <text x="0" y="16" class="fnname">SF1 · Cook lethality  (primary)</text>
+    <text x="0" y="30" class="fntext">An accumulated F-value, not a set-point: F₇₀ ≥ 13.9 equivalent</text>
+    <text x="0" y="44" class="fntext">seconds = 7-log Salmonella. Four diverse channels, all must</text>
+    <text x="0" y="58" class="fntext">agree; a fault reads "not cooked" (ADR-0009 / 0015).</text>
+
+    <text x="0" y="82" class="fnname">SF2 · Surface sanitation  (primary)</text>
+    <text x="0" y="96" class="fntext">Proven clean since the last serving, or the line does not run.</text>
+
+    <text x="0" y="120" class="fnname">SF3 · Contamination barrier</text>
+    <text x="0" y="134" class="fntext">The scraper lips, separating public side from service side.</text>
+
+    <text x="0" y="158" class="fnname">SF4 · Burn + pinch guard</text>
+    <text x="0" y="172" class="fntext">Abort the present stroke rather than push through a hand or</text>
+    <text x="0" y="186" class="fntext">hand over a scalding surface.</text>
+
+    <text x="0" y="210" class="fnname">SF5 · Signalling + soft motion</text>
+    <text x="0" y="224" class="fntext">Status beacon and a speed-limited final approach. Defence in</text>
+    <text x="0" y="238" class="fntext">depth only — never relied on as a primary safeguard.</text>
+
+    <text x="0" y="262" class="fnname">SF6 · Ingredient integrity</text>
+    <text x="0" y="276" class="fntext">A wet or spoiled hopper refuses to charge.</text>
+
+    <text x="0" y="300" class="fnname">SF7 · Bake→serve hold  (primary)</text>
+    <text x="0" y="314" class="fntext">Spores survive the bake and their toxin is heat-stable, so this</text>
+    <text x="0" y="328" class="fntext">one is controlled by TIME: a batch held too long below 60 °C</text>
+    <text x="0" y="342" class="fntext">is waste, not food (ADR-0016).</text>
+  </g>
+
+  <text x="40" y="1400" class="dim">SeedCell — open hardware (CERN-OHL-S-2.0) · docs CC-BY-4.0 · github.com/StrayEddy/SeedCell · decisions in docs/DECISIONS.md, hazards in docs/SAFETY.md</text>
+</svg>
