@@ -548,6 +548,65 @@ uncollected batch left presented at the mouth — that needs a collection sensor
 
 ---
 
+## ADR-0017 — The mouth is not sealed during the bake
+**Date:** 2026-08-04
+**Status:** **OPEN — no decision made.** Recorded so the contradiction is tracked rather than
+rediscovered. (First entry in this log that is not `Accepted`; the status field is doing real
+work here.) **Blocks freezing the bore geometry.**
+
+**Context — how this surfaced.** Drawing the CAD 1:1 for `docs/cell_anatomy.svg` forced the
+question "what closes the mouth while the machine is cooking?", and the answer is: nothing.
+
+Three things that are each individually reasonable do not hold together:
+- `MouthDie` is an **annulus** — a Ø180 ring with a **Ø156 bore** (`build_model.py`). It has to
+  be open, because that is how the bread comes out and how the die shears its rim.
+- **ADR-0007** bakes by conduction between "the heated bore-end/die and the heated piston face".
+- **ADR-0001** states the piston face *is* the flush public wall — "no separate door or shutter".
+
+But the piston sits **retracted 60 mm** through CHARGE → HYDRATE → COOK. For that whole time —
+roughly 90 s per `cook_seconds` — the mouth is an **open Ø156 hole into a 230 °C chamber**, on a
+public street, with loose dry blend and then injected water inside it.
+
+**What it contradicts.** Hazard **H6** (contaminant ingress / tampering, S=4) lists its mitigation
+as "mouth flush + sealed except during present". That is currently false. H6's likelihood score
+was set on the assumption of a sealed mouth, so the risk number is optimistic until this is
+resolved. This is a **stated mitigation the geometry does not deliver**, which is a different and
+worse class of problem than an unimplemented item.
+
+**Second, related problem.** The CAD provides no workable hot platen at that end either. ADR-0007's
+"bore-end/die" hot face is, geometrically, only the **2 mm annular ledge** between die ID (156) and
+bore ID (164). A 2 mm ring cannot conduction-bake a Ø160 disc. Whatever closes the mouth probably
+has to be the lower platen as well, so these two are one decision, not two.
+
+**Options (trade-offs only — not a decision).**
+
+1. **A mouth closure — shutter, iris, or rotary valve at X≈0.** Solves both problems at once if the
+   closure is heated: it becomes the missing platen. *Cost:* directly contradicts ADR-0001, and adds
+   a moving part in the food path that must itself be cleaned every cycle — precisely the thing the
+   syringe topology exists to avoid. It would need its own entry in the SF2/SF3 story.
+2. **Bake deeper, then transfer.** Move the cook chamber away from the mouth against a heated anvil
+   further down the bore. *Cost:* breaks "one chamber, one transfer, one delivery surface", the
+   central claim of ADR-0001, and adds a second food-contact zone to sanitize.
+3. **Accept the opening; defend H6 by other means.** Mouth obstruction/presence sensing with
+   divert-on-detect, plus the argument that a 230 °C chamber is hostile to what gets pushed into it.
+   *Cost:* structurally cheapest and changes no geometry, but it is the weakest answer to deliberate
+   tampering, and "the chamber is hot" does nothing about a fluid poured in during HYDRATE.
+4. **Shrink the exposure window.** Charge and hydrate fast, then press immediately so the Ø160 dough
+   disc itself plugs the Ø156 die within a second or two. *Cost:* reduces but does not eliminate the
+   window, and it makes the bread's public face the seal — its outer surface is then exposed to
+   street air for the whole bake, which is its own hygiene question.
+
+**Recommendation (a recommendation, not the decision):** 3 + 4 together are the only combination
+that changes no geometry, and they are worth costing first because 1 and 2 each break a load-bearing
+ADR. But if the honest answer is that a public machine cannot cook with its mouth open, then option 1
+is the real fix and ADR-0001's "no door" should be amended rather than defended.
+
+**Whatever is chosen** must update: `scripts/build_model.py`, `docs/cell_anatomy.svg` (drawn 1:1, so
+it moves with the model), H6's mitigation and score in SAFETY.md, and — if the cycle timing changes —
+`cook_seconds` and the interlock states.
+
+---
+
 ## Component tree (one cell) — reference for ADR-0001
 
 1. Structure/enclosure: fixed heated `CookBarrel` (bore), wall-interface flange & trim,

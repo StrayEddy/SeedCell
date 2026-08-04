@@ -285,7 +285,7 @@
   <text x="40" y="900" class="dim">Key dims (mm): flatbread Ø160 × 8 · bore Ø164 · piston Ø160 · wall 8 · running clearance 2 (2 scraper lips bridge it) · barrel 330 · piston 120 · charge depth 60 · sterilize stow 150 · stroke 210 · die 10 thk, Ø156 bore · platens 230 °C</text>
   <text x="40" y="934" style="font-size:11.5px;fill:#b3541e"><tspan font-weight="bold">OPEN QUESTION (found while drawing this):</tspan> the mouth die is a Ø156 ring and ADR-0001 rules out a separate door, so during CHARGE / HYDRATE / COOK — while the piston is retracted 60 mm —</text>
   <text x="40" y="949" style="font-size:11.5px;fill:#b3541e">the mouth is an open Ø156 hole into the hot chamber. That contradicts hazard H6, whose stated mitigation is "mouth flush + sealed except during present".</text>
-  <text x="40" y="964" style="font-size:11.5px;fill:#b3541e">Either the cook chamber has to move deeper than the die, or something has to close the mouth during the bake. Not yet decided — drawn here as the CAD actually is.</text>
+  <text x="40" y="964" style="font-size:11.5px;fill:#b3541e">Either the cook chamber has to move deeper than the die, or something has to close the mouth during the bake. Options and trade-offs: ADR-0017 (open). Drawn here as the CAD actually is.</text>
   <text x="40" y="917" class="dim">Drawn 1:1 from scripts/build_model.py. Scraper lips are shown exaggerated for legibility (true lip: 2 mm radial × 4 mm axial). Hoppers, waste chute and service plant are space-claim envelopes, not detailed.</text>
 
   <!-- ===================== LEGEND ===================== -->
