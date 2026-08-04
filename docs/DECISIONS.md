@@ -832,6 +832,99 @@ pass. ROADMAP Now #3 and SAFETY.md's H6 open item updated to the narrower window
 
 ---
 
+## ADR-0020 — Don't retract across a hand: a bounded mouth-clear guard on withdrawal (SF9)
+**Date:** 2026-08-04
+**Status:** Accepted (twin logic implemented). Sensor hardware (the mouth presence/safety-edge
+device) is shared with SF4 and is still a commissioning choice, same as SF4 itself.
+
+**Context.** ADR-0018 named this gap while closing a different one: *"it is safe to withdraw
+[an uncollected batch] precisely because... [but] this does not make retracting safe while a
+hand is at the mouth — that is SF4 mouth-presence hardware and is explicitly still open."* The
+old code retracted the instant a delivery ended — on a completed present, on an SF4 abort, and
+(after ADR-0018) on a proven collection — which is exactly when a hand is most likely to be at
+the mouth: reaching in to take the bread, or still touching a batch just condemned. `AWAIT_COLLECT`
+made the gap visible; it did not create it. ROADMAP items 4 and 8 tracked closing it.
+
+**Decision.**
+1. **New ground-truth input `hand_present`** and gate `retract_clear()` in
+   `godot/process_interlock.gd`, reading the same mouth presence/safety-edge sensor SF4's pinch
+   cap already needs (H5) — extended to cover withdrawal, not just delivery.
+2. **`RETRACT` holds position while blocked, instead of withdrawing anyway.** A stationary
+   piston generates no crushing force — the same reasoning `AWAIT_COLLECT` already uses to
+   exempt itself from the pinch cap (ADR-0018) applies here identically: waiting is the safe
+   move, forcing the motion through is not.
+3. **Bounded, and shorter than SF8's window.** `retract_clear_timeout_s := 60.0`, half of SF8's
+   120 s collection window, because by the time RETRACT is running the collection question is
+   already settled one way or the other: either a person just took the batch (done in seconds —
+   they are not still standing there a minute later under any normal case) or the batch was
+   condemned with nobody home (nothing to wait for in the first place). A hand still read a full
+   minute in is far more likely a stuck sensor or a foreign object than a slow person.
+4. **On timeout, alarm — do not force the withdrawal, and do not wait forever.** Escalates to the
+   existing `LOCKOUT` state (already signals `ALARM` via `signal_level()`, already means "cannot
+   make the line safe automatically, refuse service, alert a human" — no new alarm state needed).
+   This is the same shape of choice ADR-0018 made for an uncollected batch (bounded wait, then
+   act) and CLEAN_VERIFY already makes for a surface that won't verify clean (bounded retries,
+   then LOCKOUT) — SF9 is the same pattern applied to a third kind of "the machine cannot
+   currently prove it is safe to keep going."
+5. **`LOCKOUT` now has two distinct entry paths and must recover differently**, distinguished by
+   `progress` (which LOCKOUT no longer resets to 0 on entry — see below):
+   - **Stuck mid-RETRACT (SF9):** `progress > 0`. Recovers automatically the moment
+     `retract_clear()` reads true again and resumes withdrawing — no human required if the
+     obstruction was transient (a slow hand, a sensor blip). A repeated flap (clears, blocked
+     again) just re-enters LOCKOUT and re-alarms; nothing is served or forced through on a flap.
+   - **Stuck at CLEAN_VERIFY (SF2, pre-existing):** `progress == 0` (RETRACT already finished
+     before this path is ever reached). Recovers only when a clean verification actually passes
+     — needs a real human service call, not just a clear read.
+6. **`LOCKOUT` no longer forces `progress = 0.0` on entry.** The old code did this
+   unconditionally; harmless for the only path that previously reached LOCKOUT (CLEAN_VERIFY
+   failure, where the piston is already at flush by the time it gets there) but wrong for this
+   one — an alarm state should freeze the actuator wherever it stopped, not silently command it
+   to a position it never reached. This was a latent bug the new entry path surfaced, not a
+   consequence of adding one; fixed as part of this change since the old behavior would have
+   been actively dangerous applied to SF9's path (claiming, to any observer of `progress`, that
+   the piston was flush/sealed when it was actually stopped mid-bore with a hand at the mouth).
+
+**Why (design).** This mirrors HiveCell's foundational rule, applied to the one motion in
+SeedCell that most resembles it: HiveCell never *moves* until a space is proven empty; here, the
+piston never *withdraws* until the mouth is proven clear. Every other SF in this repo bounds a
+*wait* (SF7's hold, SF8's collection window) because the thing being waited on is itself decaying
+(spore risk, street exposure). This one is different: a stationary piston creates no new hazard
+by waiting, so there is no safety reason to ever force the motion — only an availability reason
+to eventually stop waiting quietly and tell a human, which is what the timeout is for.
+
+**Rejected alternatives.**
+- *Retract anyway after a short grace period*: defeats the entire purpose of a presence guard —
+  the failure mode being defended against (a hand caught by the closing/withdrawing motion) is
+  exactly what this would eventually do on a delay.
+- *Wait forever, no timeout*: a stuck-faulted sensor (or a genuinely abandoned object at the
+  mouth) then parks the machine out of service permanently with no signal to anyone — an
+  availability failure indistinguishable from a silent hang, which is worse than an alarm.
+- *A new dedicated alarm state instead of reusing `LOCKOUT`*: `LOCKOUT` already means exactly
+  "cannot make safe automatically, refuse service, alert a human" and already drives
+  `SignalLevel.ALARM`. A second state with identical external meaning would be duplication, not
+  rigor — the two recovery paths are enough of a distinction to track via `progress` without a
+  new enum value.
+
+**Accepted costs / what this does NOT close.**
+- **Sensor hardware is not chosen.** Same open item as SF4 generally (ROADMAP item 8): pick and
+  qualify the presence/safety-edge device, confirm it reads reliably across the retract travel,
+  not just at the mouth plane.
+- **`retract_clear_timeout_s := 60.0` is an engineering judgement, not a measured number** — same
+  caveat ADR-0018 recorded for its own window, and for the same reason (no real siting data yet).
+- **LOCKOUT's two recovery paths are distinguished by reading `progress`, an implicit signal, not
+  an explicit reason field.** This is consistent with this twin's existing minimal-state style
+  (e.g. `_batch_condemned` is reused the same way across states) but means a third LOCKOUT entry
+  path, if one is ever added, cannot reuse this trick and would need an explicit discriminator.
+- **This does not touch `mouth_open()`**, which stays scoped to `PRESENT`/`AWAIT_COLLECT` for
+  SF8/H6 purposes (ADR-0018). A RETRACT blocked by SF9 has the mouth physically ajar too, but
+  that is a separate bookkeeping question this ADR does not decide.
+
+**Implementation.** `godot/process_interlock.gd` (`hand_present`, `retract_clear_timeout_s`,
+`retract_clear()`, `RETRACT`/`LOCKOUT` state logic); `godot/tests/test_interlock.gd` (scenarios
+S6, S7). SAFETY.md gains **SF9** and an updated H5 row; ROADMAP items 4 and 8 updated.
+
+---
+
 ## Component tree (one cell) — reference for ADR-0001
 
 1. Structure/enclosure: fixed heated `CookBarrel` (bore), wall-interface flange & trim,

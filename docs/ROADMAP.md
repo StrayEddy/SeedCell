@@ -11,7 +11,6 @@ state belongs in GitHub Issues once the repo is public.
 | 1 | Residue + release bench test | food/hygiene | The master variable (ADR-0011); gates SF2, SF3, the surface + formula. See below. |
 | 2 | Clean-verify sensor survey | sensing | The hardest open problem: prove a food surface is clean, every cycle, unattended (SF2). |
 | 3 | **Close the mouth during the bake** (decide ADR-0017) | safety | A stated H6 mitigation the geometry does not deliver. **Prerequisite closed:** ADR-0019 (2026-08-04) decided the press order — piston presses flush right after HYDRATE and holds through COOK — which collapses the open-mouth window from ~90 s to ~9 s (CHARGE+HYDRATE+PRESS). ADR-0017 itself is still **OPEN**: ~9 s of open mouth remains, the bread's own face becomes the seal (hygiene question), and the 2 mm effective platen contact ring is unresolved. **Blocks freezing the bore.** |
-| 4 | **Retract-with-a-hand-present** (SF4 mouth-presence gate on withdrawal) | safety | Surfaced by ADR-0018: the piston withdraws the moment a delivery ends, which is exactly when a hand is at the mouth. Pre-existing, now visible. Folds into item 8. |
 
 ## Next (medium priority)
 | # | Item | Area | Why |
@@ -19,9 +18,18 @@ state belongs in GitHub Issues once the repo is public.
 | 5 | Jet-hydration dough trials | food | Does blade-free injection mixing (ADR-0006) give uniform dough? Research question #2. |
 | 6 | Low-adhesion coating durability | materials | PTFE/ceramic under scrape + 230 °C + steam (ADR-0008/0010); couples SF3 wear (H8). |
 | 7 | Export pipeline → twin/render | sim | `export_godot.py` + a visual `process_demo` scene (ADR-0014); currently logic-only. |
-| 8 | SF4 burn/pinch hardware | safety | Surface-temp cap from burn data; mouth presence + safety edge — the same sensor that gates Now #4's retract-with-a-hand-present case. |
+| 8 | SF4 burn/pinch hardware | safety | Surface-temp cap from burn data; mouth presence + safety edge — the same sensor SF9 (ADR-0020) now also reads through withdrawal. Logic side of retract-with-a-hand-present is closed; this item is the hardware selection both SF4 and SF9 are waiting on. |
 
 ## Done
+- **Retract mouth-clear guard / SF9** (was Now #4) — **ADR-0020**, 2026-08-04. The gap ADR-0018
+  named: the piston retracted the instant a delivery ended, exactly when a hand is most likely
+  to be at the mouth. `RETRACT` now holds position (no crushing force while stationary, same
+  reasoning `AWAIT_COLLECT` uses for its own pinch-cap exemption) until the mouth presence sensor
+  reads clear, bounded (60 s, half of SF8's window), then alarms via `LOCKOUT` rather than forcing
+  the withdrawal through. Fixed a latent bug `LOCKOUT` had carried since it only had one entry
+  path before: it unconditionally forced `progress = 0.0` on entry, which was harmless for
+  CLEAN_VERIFY failure (piston already at flush) but would have been actively wrong for this new
+  path (piston stopped mid-bore). Sensor hardware remains item 8's open question.
 - **Press order** (prerequisite to Now #3) — **ADR-0019**, 2026-08-04. Piston presses flush
   right after HYDRATE and holds through COOK — already implied by ADR-0006/ADR-0007's prose and
   `cook_energy.py`'s pressed-thickness assumption, just never implemented. New `PRESS` state in
@@ -46,8 +54,8 @@ state belongs in GitHub Issues once the repo is public.
   rather than *the piston moved* (it was the twin's liveness measure, so it was measuring the
   wrong event). The delivery window (120 s) is nested inside SF7's hold budget and bounds
   open-mouth exposure, not food safety. `godot/collection_guard.gd` +
-  `tests/test_collection.gd`. **Surfaced a new gap:** retracting while a hand is still at the
-  mouth is unguarded — pre-existing, now Now #4 / item 8.
+  `tests/test_collection.gd`. **Surfaced a new gap** — retracting while a hand is still at the
+  mouth was unguarded, pre-existing — **now closed by SF9 (ADR-0020)**, above.
 
 ## Critical-path experiment (not desk work)
 **Residue + release is SeedCell's master variable** — the food equivalent of HiveCell's

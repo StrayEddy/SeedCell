@@ -117,6 +117,54 @@ func _initialize() -> void:
 	_check(saw_present, "S5: never reached a PRESENT attempt to test the abort")
 	_check(p5.served == 0, "S5: completed a delivery through an active pinch trip")
 
+	# Scenario 6 -- SF9 (ADR-0020): a hand still at the mouth right after collection must
+	# not be retracted across. The piston holds position until the mouth reads clear, then
+	# completes the withdrawal normally and the serving still counts.
+	var p6 = _new_pi()
+	p6.request = true
+	p6.cook_ok = true
+	p6.retract_clear_timeout_s = 1.0
+	var blocked_seen := false
+	var frozen_progress := -1.0
+	for i in 900:
+		if p6.state == Interlock.State.AWAIT_COLLECT:
+			p6.face_loaded = false
+		var served_before: int = p6.served
+		p6.step(DT)
+		if p6.served > served_before:
+			p6.hand_present = true   # the collection that just happened -- hand is right there
+		if p6.state == Interlock.State.RETRACT and p6.hand_present:
+			blocked_seen = true
+			if frozen_progress < 0.0:
+				frozen_progress = p6.progress
+			_check(absf(p6.progress - frozen_progress) < 1e-6,
+				"S6: piston advanced through RETRACT while SF9 was blocking it")
+			if p6.t > 0.2:
+				p6.hand_present = false   # clears well inside the 1 s timeout
+	_check(blocked_seen, "S6: SF9 block was never exercised")
+	_check(p6.served >= 1, "S6: a collected batch must still be counted served")
+	_check(p6.state != Interlock.State.LOCKOUT,
+		"S6: locked out despite the hand clearing well inside the timeout")
+
+	# Scenario 7 -- SF9: if the mouth never reads clear, RETRACT must not wait forever --
+	# it alarms (LOCKOUT), holding position, rather than forcing the withdrawal through.
+	var p7 = _new_pi()
+	p7.request = true
+	p7.cook_ok = true
+	p7.retract_clear_timeout_s = 0.3
+	for i in 900:
+		if p7.state == Interlock.State.AWAIT_COLLECT:
+			p7.face_loaded = false
+		var served_before: int = p7.served
+		p7.step(DT)
+		if p7.served > served_before:
+			p7.hand_present = true   # never clears for the rest of this scenario
+	_check(p7.state == Interlock.State.LOCKOUT,
+		"S7: an indefinitely-blocked mouth never escalated to LOCKOUT (state=%d)" % p7.state)
+	_check(p7.signal_level() == Interlock.SignalLevel.ALARM,
+		"S7: LOCKOUT from a stuck SF9 guard did not signal ALARM")
+	_check(p7.progress > 0.0, "S7: LOCKOUT reset the piston position instead of holding it")
+
 	if failures == 0:
 		print("PASS: interlock held (a raw or unclean batch is never served; a good one is).")
 		quit(0)

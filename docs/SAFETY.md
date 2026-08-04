@@ -25,7 +25,7 @@ Risk = Severity (1-4) × Likelihood (1-4). Severity 4 = serious/widespread illne
 | H2 | Cross-contamination via residue | Baked-on film/crumbs from a prior serving smear into the next | 4 | 3 | 12 | SF2 sanitation every cycle; ADR-0008 self-releasing food + low-adhesion surface; SF3 scrape |
 | H3 | Spoiled / wet ingredient served | Damp hopper grows mould; spoiled oil | 3 | 2 | 6 | SF6 spoilage lockout (moisture/temp); dry storage (ADR-0012) |
 | H4 | Burn at the mouth | Hot piston face / just-baked bread scalds a hand/mouth | 3 | 3 | 9 | SF4 delivered-surface temperature cap; brief present; edge geometry |
-| H5 | Pinch / crush at the mouth | Hand reaches in as the piston presents | 3 | 2 | 6 | SF4 force cap + safety edge → abort present; SF5 slow final approach |
+| H5 | Pinch / crush at the mouth | Hand reaches in as the piston presents, OR is still at the mouth as the piston withdraws after a delivery | 3 | 2 | 6 | SF4 force cap + safety edge → abort present; **SF9** mouth-clear guard → hold position (never withdraw across a hand), bounded, then alarm (ADR-0020); SF5 slow final approach |
 | H6 | Contaminant ingress / tampering | Foreign object, fluid, or vandalism pushed into the mouth | 4 | 2? | 8? | Mouth flush + sealed except during present; presence gate; inspect-on-open. **⚠ This mitigation does not currently hold — see ADR-0017. The L=2 score assumed a sealed mouth; it is optimistic and must be re-scored once ADR-0017 is decided.** The *delivery* window is bounded (SF8, ADR-0018); the *bake* window is narrower than it was — ADR-0019 (2026-08-04) decided the piston presses flush right after HYDRATE, so the open-mouth exposure is now CHARGE+HYDRATE+PRESS (~9 s default), not the full ~90 s cook — but it is still open, not sealed, so ADR-0017 remains undecided. |
 | H7 | Cleaning-chemical residue on food surface | A disinfectant (if used) left on the piston face | 4 | 1 | 4 | ADR-0010 thermal+steam, NO per-cycle chemical; if added, a dose+rinse verify + fail-safe |
 | H8 | Foreign body from mechanism wear | Coating flake / seal fragment ends up in the bread | 3 | 2 | 6 | Food-grade materials; SF3 wear budget; inspection; frangible-part exclusion from food path |
@@ -86,6 +86,16 @@ hardware, no performance-level claim yet. **[decision]** = chosen, not yet imple
   SF7's hold budget, so the food-safety bound always dominates; what SF8 bounds is the open-mouth
   exposure (H6) and one person's ability to hold the machine out of service. Sensor: loss-of-mass
   on the actuator force channel SF4 already needs. **ADR-0018** / `godot/collection_guard.gd`.
+- **SF9 Retract mouth-clear guard (public safety, H5)** — *[sim: gate logic]* the piston must
+  never withdraw across a hand. `RETRACT` holds position (no crushing force while stationary,
+  the same reasoning `AWAIT_COLLECT` uses for its pinch-cap exemption) until the mouth presence
+  sensor reads clear, bounded by a 60 s timeout — shorter than SF8's 120 s, because by this point
+  collection is already settled one way or the other. On timeout it does not force the withdrawal
+  through: it alarms (`LOCKOUT`), the same escalation CLEAN_VERIFY already uses for "cannot make
+  safe automatically." Mirrors HiveCell's core rule (never move until proven clear) applied to
+  SeedCell's one comparable motion. Sensor: the same mouth presence/safety-edge device SF4 needs
+  for the present-stroke pinch cap, read through withdrawal too. **ADR-0020** /
+  `godot/process_interlock.gd`.
 
 ## FMEA — under-cook / cross-contamination chain (basis for the SF1/SF2 decisions)
 Component-level companion to the hazard register: how the cook/clean path can fail and what
@@ -143,7 +153,7 @@ and is regression-checked; it is NOT rated hardware and makes no performance-lev
 Addressed in sim: H1 by SF1 (+ fail-safe divert), H10 by SF7 (hold budget + divert-on-timeout),
 H11 by SF8 (collection proof + bounded delivery window),
 H2 by SF2 + ADR-0008 (residue TBV by test),
-H4/H5 by SF4 abort logic, H3 by SF6 (decision), H7 designed out by ADR-0010. H6/H8/H9 are
+H4/H5 by SF4 abort logic + SF9 retract guard, H3 by SF6 (decision), H7 designed out by ADR-0010. H6/H8/H9 are
 facility/material/label items below.
 
 ## Siting & facility rules
@@ -189,11 +199,10 @@ does not choose them.
   chosen (loss-of-mass on the actuator force channel, read as a transition). What remains is
   hardware: confirm a ~120 g batch is resolvable against the piston's own load and friction,
   and revisit the 120 s window from real siting observation — it is an engineering judgement
-  about dignity and throughput, not a measured number. **Adjacent and NOT closed:** retracting
-  while a hand is still at the mouth is unguarded. It predates SF8 (the old code retracted the
-  instant the stroke finished, when a hand is most likely to be there), but `AWAIT_COLLECT` is
-  where it becomes visible. It needs the SF4 mouth-presence sensor plus a bounded wait-for-clear
-  before withdrawing — see the SF4 item below.
+  about dignity and throughput, not a measured number. **Adjacent gap now closed (logic):**
+  retracting while a hand is still at the mouth predated SF8 and `AWAIT_COLLECT` only made it
+  visible; it is now guarded by **SF9** (ADR-0020) — RETRACT holds position until the mouth
+  reads clear, bounded, then alarms. Hardware is the same open item as the SF4 line below.
 - **SF2 clean verification (ADR-0010):** the hardest open problem — an unattended, reliable
   *sensor* that proves a food surface is clean (residue below a safe threshold) every cycle.
   Bench the thermal+steam+scrape log-reduction; decide go/no-go on avoiding chemicals.
@@ -201,8 +210,8 @@ does not choose them.
   (`docs/residue_bench_test.md`) before fixing lip count/interference; couples SF2, the surface
   spec (ADR-0008), and H8 wear. The master variable.
 - **SF4 burn/pinch:** set the touch-safe surface cap from burn-threshold data; select the mouth
-  presence sensor + safety edge + delivered-surface thermometer. That presence sensor is also
-  what gates the **retract-with-a-hand-present** case flagged under SF8 above: the withdrawal
-  should wait (boundedly) for the mouth to read clear.
+  presence sensor + safety edge + delivered-surface thermometer. That same presence sensor is
+  what **SF9** (ADR-0020) reads through withdrawal, not just delivery — the logic side of the
+  retract-with-a-hand-present case is closed; the hardware choice is shared with this item.
 - **ADR-0013 ration/identity:** privacy + fairness review of ephemeral on-device recognition;
   bias testing across skin tones/occlusion; legal review; a no-camera fallback.

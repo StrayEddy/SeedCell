@@ -29,7 +29,8 @@ enum State {
 	LETHALITY_CHECK,  # SF1: is the kill-step proven? else divert
 	PRESENT,          # advance piston, deliver the flatbread out the mouth
 	AWAIT_COLLECT,    # SF8: presented at the mouth, waiting for a person to take it
-	RETRACT,          # withdraw into the sealed sterilization zone
+	RETRACT,          # withdraw into the sealed sterilization zone; SF9 holds position
+	                  # (does not advance) while the mouth reads occupied (ADR-0020)
 	CLEAN,            # scrape + steam + heat-sterilize + dry (SF2)
 	CLEAN_VERIFY,     # SF2: are surfaces provably sanitized? else re-clean
 	DIVERT,           # dump an unsafe batch to waste, then clean
@@ -66,6 +67,15 @@ var cook_seconds := 90.0        # thin flatbread, two hot platens (see scripts/c
 var clean_seconds := 25.0
 var stroke_seconds := 6.0       # present / retract stroke duration (SF5-shaped)
 var relean_limit := 3           # consecutive failed cleans before LOCKOUT
+var retract_clear_timeout_s := 60.0  ## SF9: how long RETRACT may sit blocked waiting for the
+                                      ## mouth to read clear before it stops waiting and alarms.
+                                      ## Shorter than SF8's 120 s collection window on purpose --
+                                      ## by the time we are here, either the batch was just
+                                      ## collected (person is right there, done in seconds) or
+                                      ## the delivery was condemned with nobody home (nothing to
+                                      ## wait for). A hand still present a full minute later is
+                                      ## more likely a stuck sensor or a foreign object than a
+                                      ## slow person (ADR-0020).
 
 # --- simulated inputs (ground truth the twin/test drives) ---
 var request := false            ## someone is asking for a serving
@@ -75,6 +85,10 @@ var sensor_fault := false       ## a faulted/unknown sensor anywhere safety-rele
 var surface_sanitized := true   ## SF2: post-clean verification reads the surfaces clean
 var surface_touch_safe := true  ## SF4: delivered surface temp is safe to touch (burn guard)
 var contact_over_limit := false ## SF4: measured mouth force over the safe cap (pinch/jam)
+var hand_present := false       ## SF9: the mouth-presence sensor sees something there right
+                                 ## now (hand, object) -- read continuously, not just during
+                                 ## PRESENT. Same presence/safety-edge sensor SF4 needs for the
+                                 ## pinch cap, read through RETRACT too (ADR-0020).
 var batch_temp_c := 95.0        ## SF7: the batch's current temperature, post-bake. Drives
                                 ## the spore-hold clock, which only runs below 60 C. The
                                 ## twin/real line feeds the delivered-surface thermometer
@@ -127,6 +141,14 @@ func hold_ok() -> bool:
 ## SF4 gate for opening the mouth to a person: no pinch/jam and nothing too hot to touch.
 func mouth_safe() -> bool:
 	return not contact_over_limit and surface_touch_safe
+
+
+## SF9 gate: is it safe to keep withdrawing right now? Fail-safe like every other gate here
+## -- a faulted or absent presence reading means "something might still be there" (ADR-0020).
+func retract_clear() -> bool:
+	if sensor_fault:
+		return false
+	return not hand_present
 
 
 ## True only in the PRESENT stroke -- the one motion that exposes a person to the food
@@ -273,15 +295,25 @@ func step(delta: float) -> void:
 					_batch_condemned = true
 					_goto(State.RETRACT)
 		State.RETRACT:
-			# Withdraw toward flush: advance (1-progress) from wherever we are toward 1,
-			# so progress decreases monotonically to 0 following the same soft shape.
-			var back := profile.advance(1.0 - progress, delta, stroke_seconds)
-			progress = clampf(1.0 - back, 0.0, 1.0)
-			if progress <= 0.001:
-				progress = 0.0
-				# An aborted batch is counted as waste, not quietly scraped away by the
-				# next clean cycle: served + wasted must account for every batch made.
-				_goto(State.DIVERT if _batch_condemned else State.CLEAN)
+			# SF9 (ADR-0020): a hand-over just happened, or a batch was condemned at the
+			# mouth -- either way this is exactly when a hand is most likely to be right
+			# there. Don't withdraw across it: hold position (no crushing force generated
+			# by sitting still, same reasoning AWAIT_COLLECT already uses for the pinch
+			# cap) until the mouth reads clear, bounded by retract_clear_timeout_s so a
+			# stuck sensor or a dropped object can't strand the machine silently forever.
+			if not retract_clear():
+				if t >= retract_clear_timeout_s:
+					_goto(State.LOCKOUT)
+			else:
+				# Withdraw toward flush: advance (1-progress) from wherever we are toward 1,
+				# so progress decreases monotonically to 0 following the same soft shape.
+				var back := profile.advance(1.0 - progress, delta, stroke_seconds)
+				progress = clampf(1.0 - back, 0.0, 1.0)
+				if progress <= 0.001:
+					progress = 0.0
+					# An aborted batch is counted as waste, not quietly scraped away by the
+					# next clean cycle: served + wasted must account for every batch made.
+					_goto(State.DIVERT if _batch_condemned else State.CLEAN)
 		State.CLEAN:
 			# Scrape + steam + heat-sterilize + dry the small food-contact area.
 			if t >= clean_seconds:
@@ -308,10 +340,20 @@ func step(delta: float) -> void:
 			collection.reset()
 			_goto(State.CLEAN)
 		State.LOCKOUT:
-			# Out of service. Recover only when a clean verification passes again
-			# (e.g. after a human services it and the fault clears).
-			progress = 0.0
-			if surface_sanitized and not sensor_fault:
+			# Out of service, holding wherever the actuator stopped -- an alarm state
+			# freezes position, it does not command new motion. Two entry paths land here
+			# and recover differently, distinguished by `progress` (never touched while
+			# LOCKOUT sits, so it still reflects which one this is):
+			#  - stuck mid-RETRACT (SF9, ADR-0020): progress > 0, piston short of flush.
+			#    Recovers the moment the mouth reads clear again and resumes withdrawing --
+			#    no human action needed if it was a transient obstruction.
+			#  - stuck at CLEAN_VERIFY (SF2): progress == 0 (RETRACT already finished).
+			#    Recovers only when a clean verification passes -- needs an actual human
+			#    service call, not just a clear read.
+			if progress > 0.0:
+				if retract_clear():
+					_goto(State.RETRACT)
+			elif surface_sanitized and not sensor_fault:
 				sanitized = true
 				reclean_count = 0
 				_goto(State.IDLE)
