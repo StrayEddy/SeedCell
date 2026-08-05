@@ -103,18 +103,13 @@
   <rect x="150" y="440" width="330" height="8" class="wall"/>
   <rect x="150" y="612" width="330" height="8" class="wall"/>
 
-  <!-- heated bore-end platen (ADR-0007). The die is an ANNULUS: its hot face is only the
-       2 mm ledge between die ID 156 and bore ID 164. The mouth itself is open. -->
-  <rect x="147" y="448" width="4" height="4" class="hot"/>
-  <rect x="147" y="608" width="4" height="4" class="hot"/>
-  <text x="146" y="530" class="dim" text-anchor="middle" transform="rotate(-90 146 530)">MOUTH Ø156 — OPEN</text>
+  <!-- NO DIE (ADR-0021). The bore ends in a plain open cylinder at the wall plane X=0.
+       There is no ring, no restriction, and no bore-end platen of any kind. The second
+       hot face ADR-0007 assumed simply does not exist here. See FLAG 1. -->
+  <text x="146" y="530" class="dim" text-anchor="middle" transform="rotate(-90 146 530)">MOUTH Ø164 — OPEN, NO RING</text>
   <!-- pointer down to the mouth detail band -->
   <line x1="120" y1="545" x2="120" y2="590" class="warn" marker-end="url(#warr)"/>
   <text x="114" y="568" class="flagb" text-anchor="end" transform="rotate(-90 114 568)">see MOUTH DETAIL</text>
-
-  <!-- mouth die: hardened peeler ring, proud of the wall, ID smaller than the piston -->
-  <rect x="140" y="440" width="10" height="12" class="wall"/>
-  <rect x="140" y="608" width="10" height="12" class="wall"/>
 
   <!-- hydration ring (jet injection mixing — no blade) -->
   <rect x="190" y="437" width="12" height="9" class="ring"/>
@@ -262,7 +257,7 @@
       <rect x="770" y="-40" width="8" height="80" class="bread"/>
       <text x="955" y="-14" class="fnname">3 · COOK</text>
       <text x="955" y="2" class="fntext">The piston presses the dough to 8 mm between two 230 °C</text>
-      <text x="955" y="16" class="fntext">platens — the die end and the piston face. Both sides at once.</text>
+      <text x="955" y="16" class="fntext">platens. ⚠ Only ONE exists — the piston face; see flag 1.</text>
       <text x="955" y="30" class="dim">Pressed right after HYDRATE, holds through COOK (ADR-0019).</text>
     </g>
     <!-- 4 PRESENT -->
@@ -276,8 +271,8 @@
       <line x1="764" y1="0" x2="760" y2="0" class="axis" marker-end="url(#arr)"/>
       <text x="955" y="-14" class="fnname">4 · PRESENT  — gated, never automatic</text>
       <text x="955" y="2" class="fntext">Only if SF1 proves the kill-step AND SF7 proves the batch is not</text>
-      <text x="955" y="16" class="fntext">stale AND SF2 proved the surfaces clean. The die shears the rim</text>
-      <text x="955" y="30" class="fntext">free. Any doubt ⇒ waste, not a person.</text>
+      <text x="955" y="16" class="fntext">stale AND SF2 proved the surfaces clean. The face stops flush;</text>
+      <text x="955" y="30" class="fntext">the bread stands 8 mm proud. Any doubt ⇒ waste, not a person.</text>
     </g>
     <!-- 5 AWAIT COLLECT -->
     <g transform="translate(0,850)">
@@ -320,7 +315,7 @@
   <!-- ===================== MOUTH DETAIL BAND ===================== -->
   <line x1="40" y1="1055" x2="1360" y2="1055" stroke="#d7dbe1" stroke-width="1"/>
   <text x="40" y="1080" class="grphdr">MOUTH DETAIL — what ADR-0017 is actually about</text>
-  <text x="40" y="1097" class="dim">A and B look at the wall from the street (~1:1). C is the die corner at 8:1. All drawn as the CAD actually is, not as the hazard register assumes.</text>
+  <text x="40" y="1097" class="dim">A and B look at the wall from the street (~1:1). C is the bore end at 8:1, in the delivery pose. All drawn as the CAD actually is, not as the hazard register assumes.</text>
 
   <!-- A: sealed -->
   <g transform="translate(170,1220)">
@@ -330,10 +325,10 @@
     <circle cx="0" cy="0" r="76" class="piston"/>
     <circle cx="0" cy="0" r="76" fill="none" stroke="#39465e" stroke-width="1.2"/>
     <circle cx="0" cy="-64" r="5" fill="#3fb950" stroke="#2a7a38" stroke-width="1"/>
-    <text x="0" y="4" class="dim" text-anchor="middle" fill="#20242b">piston face</text>
-    <text x="0" y="110" class="dim" text-anchor="middle">What H6's mitigation assumes: "mouth flush +</text>
-    <text x="0" y="124" class="dim" text-anchor="middle">sealed except during present". True in IDLE and</text>
-    <text x="0" y="138" class="dim" text-anchor="middle">at the end of the present stroke. Only there.</text>
+    <text x="0" y="4" class="dim" text-anchor="middle" fill="#20242b">piston face = the wall</text>
+    <text x="0" y="110" class="dim" text-anchor="middle">Since ADR-0021 removed the mouth ring, the face</text>
+    <text x="0" y="124" class="dim" text-anchor="middle">IS the flush public wall — ADR-0001 literally, not</text>
+    <text x="0" y="138" class="dim" text-anchor="middle">aspirationally. Nothing stands proud of it.</text>
   </g>
 
   <!-- B: open -->
@@ -344,78 +339,81 @@
     <circle cx="0" cy="0" r="76" fill="url(#hotbore)"/>
     <circle cx="0" cy="0" r="76" fill="none" stroke="#39465e" stroke-width="1.2"/>
     <path d="M-54,54 A76,76 0 0,0 54,54 C37,41 -37,41 -54,54 Z" class="blend" opacity=".9"/>
-    <text x="0" y="-14" style="font-size:11px;fill:#f2cfae" text-anchor="middle">open Ø156 hole</text>
+    <text x="0" y="-14" style="font-size:11px;fill:#f2cfae" text-anchor="middle">open Ø164 hole</text>
     <text x="0" y="1" style="font-size:11px;fill:#f2cfae" text-anchor="middle">into a 230 °C chamber</text>
     <text x="0" y="110" class="dim" text-anchor="middle">What the CAD does through CHARGE and</text>
     <text x="0" y="124" class="dim" text-anchor="middle">HYDRATE (~5 s) — then PRESS closes it before</text>
     <text x="0" y="138" class="dim" text-anchor="middle">COOK (ADR-0019). ~9 s open, not ~90 s.</text>
   </g>
 
-  <!-- C: die corner at 8:1.  y(r) = 1360 - (r-70)*8 ;  x(X) = 640 + (X+14)*8 -->
+  <!-- C: bore end at 8:1, DELIVERY pose.  x(X) = 752 - X*8 (street is left) ; y(r) = 1360 - (r-70)*8 -->
   <g>
-    <text x="784" y="1118" class="small" text-anchor="middle" fill="#39465e">C · die corner, 8:1 — the whole "hot bore-end platen" (ADR-0007)</text>
-    <!-- everything inside die ID Ø156 faces the street, not metal -->
-    <rect x="640" y="1296" width="112" height="64" fill="url(#hotbore)" opacity=".26"/>
-    <text x="696" y="1327" style="font-size:10px;fill:#7a4018" text-anchor="middle">open to the</text>
-    <text x="696" y="1340" style="font-size:10px;fill:#7a4018" text-anchor="middle">street</text>
-    <!-- bore void -->
-    <rect x="752" y="1264" width="176" height="96" class="bore"/>
-    <!-- barrel wall -->
+    <text x="790" y="1118" class="small" text-anchor="middle" fill="#39465e">C · bore end, 8:1 — delivery pose, no ring (ADR-0021)</text>
+    <!-- open street to the left of the wall plane -->
+    <rect x="628" y="1200" width="124" height="160" fill="url(#hotbore)" opacity=".18"/>
+    <text x="662" y="1232" style="font-size:10px;fill:#7a4018" text-anchor="middle">street</text>
+    <!-- barrel wall band (r = 82..90), starting AT the wall plane X=0 -->
     <rect x="752" y="1200" width="176" height="64" class="wall"/>
-    <text x="844" y="1230" style="font-size:10px;fill:#4a505a" text-anchor="middle">CookBarrel — wall 8</text>
-    <text x="844" y="1243" style="font-size:10px;fill:#4a505a" text-anchor="middle">bore Ø164</text>
-    <!-- mouth die (X = -10..0, r = 78..90) -->
-    <rect x="672" y="1200" width="80" height="96" class="wall"/>
-    <text x="712" y="1240" style="font-size:10px;fill:#4a505a" text-anchor="middle">MouthDie</text>
-    <text x="712" y="1253" style="font-size:10px;fill:#4a505a" text-anchor="middle">Ø180 / Ø156</text>
-    <!-- the ledge: die ID 78 -> bore 82, i.e. 4 mm radial -->
-    <rect x="746" y="1264" width="6" height="32" class="hot"/>
-    <!-- the dough disc, pressed against X=0: r = 0..80, 8 mm thick -->
-    <rect x="752" y="1280" width="64" height="80" class="bread"/>
-    <text x="784" y="1322" style="font-size:10px;fill:#6b3d12" text-anchor="middle">dough disc</text>
-    <text x="784" y="1335" style="font-size:10px;fill:#6b3d12" text-anchor="middle">Ø160 × 8</text>
-    <!-- the 2 mm of it that actually touches hot metal -->
-    <rect x="746" y="1280" width="6" height="16" fill="#8f3218"/>
-    <line x1="749" y1="1296" x2="749" y2="1378" class="warn" stroke-dasharray="4 3"/>
-    <line x1="749" y1="1378" x2="690" y2="1378" class="warn"/>
-    <text x="686" y="1374" class="flagb" text-anchor="end">2 mm</text>
-    <text x="686" y="1388" class="flag" text-anchor="end">of contact</text>
-    <!-- ledge extent -->
-    <line x1="742" y1="1264" x2="700" y2="1218" class="leader"/>
-    <text x="696" y="1215" class="dim" text-anchor="end">ledge 4</text>
+    <text x="848" y="1228" style="font-size:10px;fill:#4a505a" text-anchor="middle">CookBarrel — wall 8</text>
+    <text x="848" y="1241" style="font-size:10px;fill:#4a505a" text-anchor="middle">bore Ø164, plain open end</text>
+    <!-- running clearance (r = 80..82), the only gap at this end -->
+    <rect x="752" y="1264" width="176" height="16" class="bore"/>
+    <!-- piston body (r = 0..80), face flush at the wall plane -->
+    <rect x="752" y="1280" width="176" height="80" class="piston"/>
+    <rect x="752" y="1280" width="5" height="80" class="hot"/>
+    <text x="850" y="1322" style="font-size:10px;fill:#20242b" text-anchor="middle">Piston Ø160 — face stops</text>
+    <text x="850" y="1335" style="font-size:10px;fill:#20242b" text-anchor="middle">flush at X=0, never past</text>
+    <!-- the bread, riding on that face, standing PROUD into the street -->
+    <rect x="688" y="1280" width="64" height="80" class="bread"/>
+    <text x="720" y="1318" style="font-size:10px;fill:#6b3d12" text-anchor="middle">bread</text>
+    <text x="720" y="1331" style="font-size:10px;fill:#6b3d12" text-anchor="middle">Ø160 × 8</text>
+    <!-- proud dimension -->
+    <line x1="688" y1="1272" x2="688" y2="1180" class="warn" stroke-dasharray="4 3"/>
+    <line x1="752" y1="1272" x2="752" y2="1180" class="warn" stroke-dasharray="4 3"/>
+    <line x1="688" y1="1186" x2="752" y2="1186" class="warn" marker-end="url(#warr)"/>
+    <text x="720" y="1178" class="flagb" text-anchor="middle">8 mm proud</text>
+    <text x="720" y="1166" class="flag" text-anchor="middle">the grab</text>
+    <!-- nothing opposite the face -->
+    <line x1="672" y1="1360" x2="672" y2="1386" class="warn"/>
+    <line x1="672" y1="1386" x2="756" y2="1386" class="warn"/>
+    <text x="668" y="1390" class="flagb" text-anchor="end">no platen here</text>
+    <text x="668" y="1403" class="flag" text-anchor="end">— nothing at all (FLAG 1)</text>
   </g>
 
   <!-- annotation -->
-  <g transform="translate(960,1140)">
-    <text x="0" y="0" class="fnname">Why the two halves are one decision</text>
-    <text x="0" y="20" class="fntext">ADR-0007 bakes the disc by conduction between two heated</text>
-    <text x="0" y="34" class="fntext">platens: the piston face, and "the heated bore-end/die".</text>
-    <text x="0" y="48" class="fntext">Section C is what that second platen actually is.</text>
-    <text x="0" y="72" class="fntext">The ledge between die ID Ø156 and bore ID Ø164 is 4 mm wide</text>
-    <text x="0" y="86" class="fntext">radially — but the Ø160 disc overlaps the die by only 2 mm, so</text>
-    <text x="0" y="100" class="fntext">the hot ring it can actually touch is 2 mm. Everything inside</text>
-    <text x="0" y="114" class="fntext">Ø156 faces the open mouth, not metal.</text>
-    <text x="0" y="138" class="fntext">A 2 mm contact ring cannot conduction-bake a Ø160 disc. So the</text>
-    <text x="0" y="152" class="fntext">machine has no working lower platen AND no closure for the</text>
-    <text x="0" y="166" class="fntext">mouth. Whatever closes the mouth probably has to BE the</text>
-    <text x="0" y="180" class="fntext">platen — which is why ADR-0017 treats these as one decision,</text>
-    <text x="0" y="194" class="fntext">not two. Its three options are in DECISIONS.md.</text>
-    <text x="0" y="218" class="dim">(ADR-0017 calls the ledge "2 mm". The ledge is 4 mm; the</text>
-    <text x="0" y="232" class="dim">contact is 2 mm. Its conclusion is unchanged.)</text>
+  <g transform="translate(960,1136)">
+    <text x="0" y="0" class="fnname">What removing the ring fixed, and what it did not</text>
+    <text x="0" y="20" class="fntext">There used to be a hardened Ø156 peeler ring here, standing</text>
+    <text x="0" y="34" class="fntext">10 mm proud of the wall. It had three jobs and kept none of</text>
+    <text x="0" y="48" class="fntext">them: rim-shearing duplicated ADR-0008's self-release (and</text>
+    <text x="0" y="62" class="fntext">made crumbs at the public face with nowhere to go); its role</text>
+    <text x="0" y="76" class="fntext">as ADR-0007's second platen was 2 mm of contact against a</text>
+    <text x="0" y="90" class="fntext">Ø160 disc, which cannot bake anything; and its hard-stop role</text>
+    <text x="0" y="104" class="fntext">moved to drive-side end stops, out of the food path entirely.</text>
+    <text x="0" y="128" class="fntext">Being 10 mm proud against an 8 mm bread, it also left the</text>
+    <text x="0" y="142" class="fntext">serving RECESSED 2 mm inside a hole. Gone, the bread now</text>
+    <text x="0" y="156" class="fntext">stands 8 mm PROUD of a flush wall — offered, not buried —</text>
+    <text x="0" y="170" class="fntext">and the only thing that ever crosses the wall plane is soft</text>
+    <text x="0" y="184" class="fntext">bread. No rigid part protrudes, so there is no shear edge.</text>
+    <text x="0" y="208" class="flag"><tspan class="flagb">It did not fix the platen.</tspan> It makes the absence official:</text>
+    <text x="0" y="222" class="flag">there is now definitively nothing at this end, so the bake is</text>
+    <text x="0" y="236" class="flag">one-sided and the dough face is open to the street while it</text>
+    <text x="0" y="250" class="flag">cooks. That is FLAG 1 / ADR-0017, still open.</text>
   </g>
 
   <!-- ===================== KEY DIMS + OPEN FLAGS ===================== -->
-  <text x="40" y="1425" class="dim">Key dims (mm): flatbread Ø160 × 8 · bore Ø164 · piston Ø160 · wall 8 · running clearance 2 (2 scraper lips bridge it) · barrel 330 · piston 120 · charge depth 60 · sterilize stow 150 · stroke 210 · die 10 thk, Ø156 bore · platens 230 °C</text>
+  <text x="40" y="1425" class="dim">Key dims (mm): flatbread Ø160 × 8 · bore Ø164 · piston Ø160 · wall 8 · running clearance 2 (2 scraper lips bridge it) · barrel 330 · piston 120 · charge depth 60 · sterilize stow 150 · stroke 210 · no mouth ring (ADR-0021) · piston face 230 °C</text>
   <text x="40" y="1442" class="dim">Drawn 1:1 from scripts/build_model.py (mouth detail as noted). Scraper lips are shown exaggerated for legibility (true lip: 2 mm radial × 4 mm axial). Hoppers, waste chute and service plant are space-claim envelopes, not detailed.</text>
 
-  <text x="40" y="1472" class="flag"><tspan class="flagb">FLAG 1 — the mouth is not sealed during the bake (ADR-0017, OPEN; blocks freezing the bore).</tspan> The mouth die is a Ø156 ring and ADR-0001 rules out a separate door, so while</text>
-  <text x="40" y="1487" class="flag">the piston is retracted the mouth is an open hole into the hot chamber (view B). That contradicts hazard H6, whose stated mitigation is "mouth flush + sealed except during present" —</text>
-  <text x="40" y="1502" class="flag">a stated mitigation the geometry does not deliver, which is a worse class of problem than an unimplemented one. The CAD also gives no workable lower platen at that end (section C).</text>
+  <text x="40" y="1472" class="flag"><tspan class="flagb">FLAG 1 — nothing sits at the bore end: no closure, and no second cook platen (ADR-0017, OPEN; blocks freezing the bore).</tspan> ADR-0007 bakes the disc by conduction between TWO hot</text>
+  <text x="40" y="1487" class="flag">platens — the piston face and "the heated bore-end/die". Section C is what that second platen is: nothing. The ring that nominally provided it gave 2 mm of contact against a Ø160 disc and</text>
+  <text x="40" y="1502" class="flag">has now been removed outright (ADR-0021), so the bake is one-sided and the dough's outer face is open to the street for the whole cook. During CHARGE + HYDRATE the bore is open too (view B),</text>
+  <text x="40" y="1517" class="flag">which is what hazard H6's "mouth flush + sealed except during present" does not deliver. Whatever answers this probably has to be BOTH the closure and the platen — one decision, not two.</text>
 
-  <text x="40" y="1528" class="flag"><tspan class="flagb">FLAG 2 — RESOLVED (ADR-0019, 2026-08-04): the piston presses flush right after HYDRATE and holds through COOK.</tspan> Found while drawing this sheet that three artefacts</text>
-  <text x="40" y="1543" class="flag">disagreed on this: build_model.py's chargeDepth comment implied the piston stayed retracted for the cook too; the twin ran CHARGE → HYDRATE → COOK without moving the piston at</text>
-  <text x="40" y="1558" class="flag">all (silent, not a decision); only cycle panel 3 already drew the bake pressed up. It turns out ADR-0006 ("the piston then presses it") and ADR-0007 ("mix + press + cook, no</text>
-  <text x="40" y="1573" class="flag">transfer") already said this in prose — the artefacts had drifted, not the design. Exposure window: ~9 s (CHARGE+HYDRATE+PRESS), not ~90 s. Does not decide ADR-0017 — see FLAG 1.</text>
+  <text x="40" y="1545" class="flag"><tspan class="flagb">FLAG 2 — RESOLVED (ADR-0019, 2026-08-04): the piston presses flush right after HYDRATE and holds through COOK.</tspan> Found while drawing this sheet that three artefacts</text>
+  <text x="40" y="1560" class="flag">disagreed on this: build_model.py's chargeDepth comment implied the piston stayed retracted for the cook too; the twin ran CHARGE → HYDRATE → COOK without moving the piston at</text>
+  <text x="40" y="1575" class="flag">all (silent, not a decision); only cycle panel 3 already drew the bake pressed up. It turns out ADR-0006 ("the piston then presses it") and ADR-0007 ("mix + press + cook, no</text>
+  <text x="40" y="1590" class="flag">transfer") already said this in prose — the artefacts had drifted, not the design. Exposure window: ~9 s (CHARGE+HYDRATE+PRESS), not ~90 s. Does not decide ADR-0017 — see FLAG 1.</text>
 
   <!-- ===================== LEGEND ===================== -->
   <line x1="40" y1="1600" x2="1360" y2="1600" stroke="#d7dbe1" stroke-width="1"/>
@@ -425,9 +423,9 @@
   <g transform="translate(40,1640)">
     <text x="0" y="16" class="fnname">1 · CookBarrel — the fixed heated bore</text>
     <text x="0" y="32" class="fntext">A stationary tube through the wall, open at both ends: the</text>
-    <text x="0" y="46" class="fntext">mouth at X=0, the service side at X=330. Its far end is the</text>
-    <text x="0" y="60" class="fntext">lower cook platen. Round, so there is no corner to harbour</text>
-    <text x="0" y="74" class="fntext">residue and nothing the scraper cannot reach.</text>
+    <text x="0" y="46" class="fntext">mouth at X=0, the service side at X=330. Round, so there is</text>
+    <text x="0" y="60" class="fntext">no corner to harbour residue and nothing the scraper cannot</text>
+    <text x="0" y="74" class="fntext">reach. Nothing caps the mouth end — see flag 1.</text>
 
     <text x="0" y="102" class="fnname">2 · Piston — the ONE moving part</text>
     <text x="0" y="118" class="fntext">Its face is four things at once: the flush public wall when</text>
@@ -440,10 +438,11 @@
     <text x="0" y="218" class="fntext">running gap. They squeegee the full bore on every stroke and</text>
     <text x="0" y="232" class="fntext">separate the public side from the sealed service side.</text>
 
-    <text x="0" y="260" class="fnname">4 · MouthDie — peeler + hard stop</text>
-    <text x="0" y="274" class="fntext">Fixed hardened ring, proud of the wall. Its Ø156 bore is</text>
-    <text x="0" y="288" class="fntext">smaller than the Ø160 piston, so it shears the bread rim free</text>
-    <text x="0" y="302" class="fntext">on ejection and mechanically stops the piston at flush.</text>
+    <text x="0" y="260" class="fnname">4 · The mouth — a plain open bore end</text>
+    <text x="0" y="274" class="fntext">No ring, no shutter, no restriction (ADR-0021 removed the die).</text>
+    <text x="0" y="288" class="fntext">Forward travel stops at X=0 on a DRIVE-side end stop, so the</text>
+    <text x="0" y="302" class="fntext">face is the wall and the bread stands 8 mm proud to be taken.</text>
+    <text x="0" y="316" class="flag">⚠ Also means no second cook platen — see flag 1.</text>
   </g>
 
   <!-- column 2 -->

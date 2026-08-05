@@ -24,15 +24,16 @@ nutrition — a warm daily survival ration eaten by hand with no packaging — n
 **The hot syringe (ADR-0001).** A single heated piston moves inside a fixed heated bore.
 Idle, the piston face is the flush public wall. To make food it retracts to open a short
 cook chamber; dry blend is metered in and **hydrated by injected water jets — no mixer
-blade** (ADR-0006); the piston presses the dough and the two hot faces **conduction-bake**
-it (ADR-0007); it advances to eject the flatbread through a fixed mouth die; then parks deep
+blade** (ADR-0006); the piston presses the dough and **conduction-bakes** it against its
+heated face (ADR-0007); it advances to flush at the wall, leaving the flatbread standing
+proud where a person can take it (ADR-0021); then parks deep
 in a sealed zone to **scrape + steam + heat-sterilize + dry** before the next serving
 (ADR-0010). The whole cycle is one part translating along one axis — the same syringe bargain
 as HiveCell.
 
 The engineering goal is not making food — it is **minimizing food-contact surfaces**. The
 design collapses them to essentially one chamber, one transfer, one delivery surface: the
-bore wall, the piston face, and the die lip. Everything upstream stays dry (ADR-0012).
+bore wall and the piston face. Everything upstream stays dry (ADR-0012).
 
 ## Food
 

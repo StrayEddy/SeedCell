@@ -18,16 +18,17 @@ flatbread ejected through the mouth, not a cavity presented to a person.
   the machine. The face IS the flush public wall — no separate door or shutter.
 - Make: the piston retracts, opening a short cook chamber in the bore; dry blend is
   metered in and hydrated in place; the piston presses the dough into a thin disc and
-  the two hot faces (bore-end/die + piston face) bake it.
-- Deliver: the piston advances back toward the mouth and ejects the finished flatbread
-  through the fixed mouth die (which shears/peels it free); the face returns to flush.
+  bakes it against its own heated face. (*Written as two hot faces; only one exists —
+  ADR-0017, open.*)
+- Deliver: the piston advances to flush at the wall plane and stops there, leaving the
+  finished flatbread standing 8 mm proud where a person can take it (ADR-0021).
 - Clean: the piston parks deep in a sealed sterilize zone where its face and the bore
   are scraped, steamed, heat-sterilized and dried before the next serving.
 
 **Why.** Fewest moving parts (one primary piston, one drive) → best reliability, cost,
 simplicity — the same reasoning that made HiveCell a syringe. Crucially, it collapses
-the **food-contact surfaces to the absolute minimum**: the bore wall, the piston face,
-and the mouth die lip — "one chamber, one transfer, one delivery surface" (the stated
+the **food-contact surfaces to the absolute minimum**: the bore wall and the piston
+face — "one chamber, one transfer, one delivery surface" (the stated
 design goal). The piston face does quadruple duty (flush wall + cook platen + delivery
 surface + cleaning interface), exactly as HiveCell's piston is floor + door + squeegee.
 
@@ -39,7 +40,10 @@ surface + cleaning interface), exactly as HiveCell's piston is floor + door + sq
 
 **Accepted costs / constraints.** A few hidden service-side helpers may still be needed
 (a mouth die, hydration jets, cleaning stations) — SeedCell will accrete them the way
-HiveCell accreted spray rings and a service squeegee. The single-chamber ideal has a
+HiveCell accreted spray rings and a service squeegee. *(2026-08-05: the mouth die was the
+first of these to be tested against the rest of the design, and it did not survive — see
+ADR-0021. Worth noting that this paragraph predicted accretion and named the exact part
+that turned out to be unearned.)* The single-chamber ideal has a
 real tension: charging + hydration ports are extra small contact points (see ADR-0006);
 tracked, not hidden. Bore/piston dimensions are first-pass (`scripts/build_model.py`).
 
@@ -153,6 +157,11 @@ each stroke. Dough uniformity + hydration time are bench items (research questio
 **Decision.** Cook by **conduction between two hot platens** — the heated bore-end/die
 and the heated piston face — pressing the thin dough disc between them (a contact
 griddle). No separate oven, no hot air, no radiant element in the food space.
+
+> ⚠ **The second platen does not exist (ADR-0017, OPEN).** The "heated bore-end/die" named
+> here was only ever a 2 mm contact ring, and ADR-0021 removed it outright. As built, this
+> is a **one-sided** bake against the piston face alone. The energy and lethality numbers
+> below assume two-sided heating and are therefore optimistic until ADR-0017 is decided.
 
 **Why (quantified, `scripts/cook_energy.py`).** A thin flatbread is ideal for
 conduction: at 8 mm thickness heated from both sides at 230 °C, the core clears a 75 °C
@@ -548,11 +557,15 @@ uncollected batch left presented at the mouth — that needs a collection sensor
 
 ---
 
-## ADR-0017 — The mouth is not sealed during the bake
-**Date:** 2026-08-04
+## ADR-0017 — Nothing occupies the bore end: no closure during the bake, and no second platen
+**Date:** 2026-08-04 (reframed 2026-08-05 after ADR-0021)
 **Status:** **OPEN — no decision made.** Recorded so the contradiction is tracked rather than
 rediscovered. (First entry in this log that is not `Accepted`; the status field is doing real
 work here.) **Blocks freezing the bore geometry.**
+
+> **Read the second addendum first (2026-08-05).** ADR-0021 removed the mouth die, so the
+> geometry the body of this ADR argues about no longer exists. The *problem* is unchanged and
+> slightly larger; the options below are re-scored at the end.
 
 **Context — how this surfaced.** Drawing the CAD 1:1 for `docs/cell_anatomy.svg` forced the
 question "what closes the mouth while the machine is cooking?", and the answer is: nothing.
@@ -638,6 +651,60 @@ It does not make the problem vanish: a few seconds of open mouth is still an ope
 own face becomes the seal (with its own hygiene question, already noted under option 4), and
 **(a) is untouched** — a 2 mm contact ring still cannot bake a Ø160 disc, whenever the press
 happens. The platen half of this ADR stands on its own.
+
+### Second addendum, 2026-08-05 — the die is gone; this is now "what belongs at the bore end?"
+
+**ADR-0021 removed `MouthDie` entirely.** The reasoning is there, not here; what matters for this
+decision is that the geometry above is obsolete in a specific way:
+
+- **There is no Ø156 aperture any more.** The bore ends in a plain open Ø164 cylinder at the wall
+  plane. "Close the Ø156 hole" was the wrong framing — the question is what, if anything, occupies
+  the bore end at all.
+- **The 2 mm platen is not merely inadequate, it is absent.** Addendum (a) established that the
+  ring gave 2 mm of usable contact. That ring is gone, so the bake is now unambiguously
+  **one-sided**: the piston face is the only platen. ADR-0007's "conduction between two hot
+  platens" currently describes a machine with one.
+- **The exposure window is unchanged (~9 s, per ADR-0019)**, but its *character* changed. The
+  dough no longer plugs a narrower ring; it sits in a full-bore opening with a 2 mm annular gap
+  around it, and its outer face is flush with the street rather than recessed inside a 10 mm
+  channel.
+- **One thing got better:** the delivery. The bread now stands 8 mm proud of a flush wall instead
+  of recessed 2 mm inside a hole. Whatever is chosen below **must not undo that** — which is a new
+  constraint the original four options were never scored against.
+
+**Re-scoring the four options against the new geometry.**
+
+1. **A heated closure at X=0 (shutter / iris / rotary valve).** *Strengthened.* It was always the
+   only option that answers both halves at once, and with the die gone it is now the only source
+   of a second platen of any kind. Its cost is unchanged and still severe: it contradicts
+   ADR-0001's "no door", and it puts a moving part in the food path that must itself be cleaned
+   every cycle — the exact thing the syringe topology exists to avoid. **It must also not
+   re-recess the serving**; a closure that retracts clear of the aperture keeps the 8 mm-proud
+   delivery, one that sits proud of the wall throws it away and re-creates the die's ergonomic
+   defect under a different name.
+2. **Bake deeper against an internal anvil, then transfer.** *Unchanged, still expensive.* Breaks
+   "one chamber, one transfer, one delivery surface" and adds a second food-contact zone to
+   sanitize. But note it now has a distinct advantage it did not visibly have before: an internal
+   anvil is **inside the cleanable volume**, so it is the only way to get a second platen without
+   putting a mechanism at the public face.
+3. **Accept the opening; defend H6 by other means** (obstruction sensing + divert-on-detect).
+   *Unchanged as a closure answer, and it was never a platen answer.* On its own it now leaves the
+   bake one-sided, so it can only ever be half of a solution.
+4. **Shrink the exposure window by pressing early.** *Already banked* — this is ADR-0019, done. It
+   contributes nothing further and is no longer an open option.
+
+**Where this leaves the recommendation.** The original text preferred "3 + 4 together" because
+they changed no geometry. 4 is now spent, and 3 alone leaves a one-sided bake — so **the cheap
+combination no longer adds up to an answer.** The live question is whether the second platen comes
+from a *closure at the face* (option 1, mechanism in public, must preserve the 8 mm-proud
+delivery) or from an *anvil deeper in the bore* (option 2, mechanism in the clean zone, costs a
+transfer). That is a genuine fork, and it is the thing to decide next.
+
+**A fifth criterion, newly explicit: can a person actually take the bread?** Options 1–4 were
+scored on hygiene, hazard, and cost, and none of them asked this. The die's removal exposed that
+the delivery had been ergonomically bad for the whole life of the project without anyone scoring
+it. Any candidate must now be judged on the reach it leaves the person, not only on what it does
+for H6.
 
 ---
 
@@ -925,10 +992,95 @@ S6, S7). SAFETY.md gains **SF9** and an updated H5 row; ROADMAP items 4 and 8 up
 
 ---
 
+## ADR-0021 — Remove the mouth die: the bore ends in a plain open cylinder
+**Date:** 2026-08-05
+**Status:** Accepted (CAD, drawing and export updated). Hands ADR-0017 a **harder** problem, and
+does not pretend otherwise.
+
+**Context.** `MouthDie` was a hardened Ø180/Ø156 ring standing 10 mm proud of the public wall,
+present since the first commit. It was never justified in an ADR of its own — it arrived with the
+initial geometry and accumulated three jobs by assertion. Reviewing it against the decisions that
+came later, none of the three survives:
+
+1. **"Peeler" — shears the bread's rim so it releases from the piston face.** This duplicates
+   **ADR-0008**, which is an entire decision dedicated to making the bread leave *by itself*
+   (low-adhesion surface + sacrificial flour boundary layer + a lean formula that shrinks and
+   self-releases "before the piston even ejects it"). If ADR-0008 holds, the peeler is redundant;
+   if it does not, a shearing ring is not the rescue — the machine has a much larger problem
+   (ADR-0011, the master variable). Worse, shearing a Ø160 disc down to Ø156 **generates trimmings
+   at the public face every cycle, and nothing in the repo says where they go.** A crumb stream
+   outside the cleanable volume is the opposite of what ADR-0010 is for.
+2. **Second cook platen** — ADR-0007's "heated bore-end/die". Already disproven by ADR-0017's
+   own addendum: the disc overlaps the die by 2 mm radially, and **a 2 mm contact ring cannot
+   conduction-bake a Ø160 disc.** This job was fictional before this ADR touched it.
+3. **Front mechanical hard stop** — the physical guarantee that a runaway drive cannot fire the
+   piston into the street. **This one is real and is retained**, but it does not need to live in
+   the aperture. It moves to **drive-side mechanical end stops** in the service plant, which is
+   how the sibling project already does it (HiveCell: *"end stops + latch define the travel
+   ends"*, *"mechanical hard stops"*). A coupling failure does not defeat this: an undriven
+   horizontal piston has nothing pushing it out.
+
+**Decision.** Delete `MouthDie` and its two parameters (`dieThk`, `deliveryDia`). The bore ends
+in a **plain open cylinder at the wall plane**. Forward travel is limited to X=0 by a drive-side
+end stop, outside the food path.
+
+**Why this is better, not merely simpler.**
+- **ADR-0001 becomes literally true.** "The piston face *is* the flush public wall — no separate
+  door or shutter" was, geometrically, false: a ring stood 10 mm proud of that wall, so the public
+  face was a 10 mm-deep, Ø156 well with the piston recessed at the bottom of it. Now the face
+  really is the wall.
+- **The serving is offered instead of buried.** A 10 mm-proud ring against an 8 mm bread left the
+  flatbread **recessed 2 mm inside a hole** — a person had to reach into a Ø156 aperture and pinch
+  a disc they could barely see. With the ring gone, the same stroke leaves the bread **standing
+  8 mm proud of a flat wall**, where it can be taken. This is a dignity and accessibility
+  improvement, not an aesthetic one, and it is the criterion nobody had been scoring against.
+- **Nothing rigid ever crosses the wall plane.** The only thing that protrudes is soft bread, so
+  the aperture has no shear edge and the design gains no new pinch geometry. `build_model.py`'s
+  report now asserts this (`protrusion check`: min X over all solids ≥ 0).
+- **One less food-contact part**, one less hardened component, one less thing for the scraper
+  story to explain — consistent with ADR-0001's "fewest food-contact surfaces possible".
+
+**Rejected alternatives.**
+- *Keep the ring and let the piston travel past it to eject fully*: geometrically impossible —
+  the piston (Ø160) is larger than the aperture (Ø156) by design, which is exactly what lets the
+  face seal the wall. **Full ejection and flush-piston-as-wall are mutually exclusive**; you can
+  have one or the other, and the flush wall is load-bearing for ADR-0001.
+- *Keep the ring and accept the recessed serving*: preserves a component whose only surviving job
+  can be done better elsewhere, at the cost of the delivery being hard to reach.
+- *Push a rejected batch out through the mouth onto a street-side grate* (considered while
+  discussing waste handling): contradicts ADR-0009's "diverted to waste, **never to the mouth**"
+  and ADR-0010's "nothing waste-related on the public face". Not adopted.
+
+**Accepted costs / what this does NOT close.**
+- **It makes ADR-0017 harder, and that is the honest headline.** The die was the last nominal
+  occupant of the bore end. With it gone there is *definitively* nothing there: the bake is
+  **one-sided** (only the piston face is a platen) and the dough's outer face is **open to the
+  street for the whole cook**. ADR-0017 is no longer "how do we close a Ø156 hole" — it is
+  "what belongs at the bore end at all". See its second addendum, below.
+- **Rim quality and the running gap are now unmanaged.** The die trimmed the disc's outer 2 mm,
+  which incidentally cleaned up any dough extruded into the 2 mm running clearance under forming
+  pressure. That job now falls entirely to ADR-0008's self-release and SF3's scraper lips.
+  ADR-0010 already flags "confirm the scraper actually clears crumbs to waste and not into the
+  running gap" — this raises the stakes on that bench item rather than adding a new one.
+- **8 mm of protrusion is asserted to be graspable, not measured.** It is a large (Ø160) but thin
+  disc standing off a flat wall. That should be checked with real hands, including someone with
+  limited dexterity, before the geometry is frozen.
+- **Self-release becomes load-bearing with no mechanical backup.** ADR-0011's bench test was
+  already the master variable; it is now also the only thing that gets the bread off the face.
+
+**Implementation.** `scripts/build_model.py` (part + params removed, docstring rewritten, new
+`protrusion check` assertion); `scripts/export_blender.py` (`die_thk_m` / `delivery_dia_m` dropped
+from the manifest); `docs/cell_anatomy.svg` (die removed from the longitudinal section; mouth
+detail view C redrawn as the delivery pose; legend item 4, cycle panels 3–4, FLAG 1 and key dims
+rewritten); `docs/SAFETY.md`, `README.md`, `index.html`, `scripts/cook_energy.py`. The Blender
+hero render is unaffected — it is built from primitives and never modelled the die.
+
+---
+
 ## Component tree (one cell) — reference for ADR-0001
 
 1. Structure/enclosure: fixed heated `CookBarrel` (bore), wall-interface flange & trim,
-   `MouthDie` (fixed peeler/hard-stop ring), armored public face.
+   armored public face. (No mouth die since ADR-0021; forward travel is stopped drive-side.)
 2. Motion/actuation: piston linear drive, bore-as-guide (no external rails, HiveCell
    ADR-0007 lesson), actuator-to-piston coupling, mechanical hard stops, passive flush latch.
 3. Food path (kept minimal): `DryStorage` hoppers + dosers, oil reservoir, `HydrationRing`

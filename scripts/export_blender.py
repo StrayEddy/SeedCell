@@ -44,8 +44,8 @@ manifest = {
 	"charge_depth_m": s.chargeDepth.Value / 1000.0,
 	"flatbread_dia_m": s.flatbreadDia.Value / 1000.0,
 	"flatbread_thk_m": s.flatbreadThk.Value / 1000.0,
-	"die_thk_m": s.dieThk.Value / 1000.0,
-	"delivery_dia_m": s.deliveryDia.Value / 1000.0,
+	# No die keys since ADR-0021 -- the bore ends in a plain open cylinder at the wall
+	# plane. The bread's protrusion at full presentation is just flatbread_thk_m.
 	"parts": [o.Name for o in parts],
 }
 with open(os.path.join(OUT, "scene.json"), "w") as f:

@@ -3,8 +3,16 @@
 Run:  python3 scripts/cook_energy.py
 
 No FreeCAD / no deps. First-order model of the ADR-0007 conduction bake: a thin
-flatbread pressed between two hot platens (the heated bore end/die and the heated
-piston face). Answers three things the design leans on:
+flatbread pressed between two hot platens (the heated bore end and the heated
+piston face).
+
+*** WARNING: the second platen does not currently exist (ADR-0017, OPEN). ADR-0021
+removed the mouth die, and the "bore-end platen" it nominally provided was only ever
+a 2 mm contact ring. The symmetric two-sided model below is therefore OPTIMISTIC --
+a one-sided bake is slower to the same core temperature and needs a longer hold. Do
+not treat these cook times as validated until ADR-0017 is decided. ***
+
+Answers three things the design leans on:
   1. COOK TIME  -- how long the core takes to reach the kill-step (conduction).
   2. LETHALITY   -- does the core clear the pathogen-kill target (SF1, ADR-0009)?
   3. ENERGY      -- Wh per serving to heat + partly dry the dough (utility cost).

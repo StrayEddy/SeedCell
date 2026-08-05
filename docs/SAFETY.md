@@ -175,17 +175,23 @@ does not choose them.
 
 ## Open items
 - **⚠ Mouth is not sealed during the bake (H6, ADR-0017) — OPEN, blocks freezing the bore.**
-  Found by drawing the CAD 1:1 (`docs/cell_anatomy.svg`). `MouthDie` is an annulus with a
-  Ø156 bore; ADR-0007 bakes against "the heated bore-end/die"; ADR-0001 rules out a separate
-  door or shutter. The piston sits retracted 60 mm through CHARGE → HYDRATE, then **presses
-  flush and holds through COOK (ADR-0019, 2026-08-04)** — so the open-mouth window is now
-  CHARGE + HYDRATE + PRESS (~9 s default), not the full ~90 s bake, but it is still a real
-  opening: the bread's own pressed face is what plugs the die, not a mechanical seal. This is
-  not an unimplemented item — it is a stated mitigation that the current geometry contradicts,
-  so H6's risk score is optimistic until it is resolved. Also note the CAD gives no workable hot
-  platen at the die end: only the 2 mm annular ledge between die ID and bore ID, which cannot
-  bake a Ø160 disc — ADR-0019 does not touch this half of the problem. Resolution options and
-  trade-offs are in **ADR-0017**; the decision is not yet made.
+  Found by drawing the CAD 1:1 (`docs/cell_anatomy.svg`), and **widened by ADR-0021**
+  (2026-08-05), which removed the mouth die: the bore now ends in a plain open Ø164 cylinder,
+  so there is *definitively nothing* at that end — no closure and **no second cook platen**.
+  Two consequences, both open:
+  - **Exposure.** The piston sits retracted 60 mm through CHARGE → HYDRATE, then **presses
+    flush and holds through COOK (ADR-0019)** — so the open-mouth window is ~9 s, not the full
+    ~90 s bake. But it is still a real opening, and the dough's own outer face is what faces
+    the street during the cook, not a mechanical seal. H6's stated mitigation ("mouth flush +
+    sealed except during present") is a mitigation the geometry does not deliver, which is a
+    worse class of problem than an unimplemented item; its risk score stays optimistic until
+    this is resolved.
+  - **The bake is one-sided.** ADR-0007 specifies conduction between *two* hot platens. Only
+    the piston face exists. The lethality and energy figures downstream of ADR-0007 assume
+    two-sided heating, so they are optimistic in the same direction as H6's score.
+
+  Resolution options are re-scored against the post-ADR-0021 geometry in **ADR-0017**'s second
+  addendum; the decision is not yet made.
 - **SF1 real sensing (ADR-0009/0015):** the F-value target is set (F₇₀ ≥ 13.9 s, 7-log
   *Salmonella*) — what remains is hardware and proof: choose probe parts; validate that they
   read the true geometric **coldest point** (get this wrong and the integral measures the

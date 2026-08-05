@@ -10,7 +10,7 @@ state belongs in GitHub Issues once the repo is public.
 |---|------|------|-----|
 | 1 | Residue + release bench test | food/hygiene | The master variable (ADR-0011); gates SF2, SF3, the surface + formula. See below. |
 | 2 | Clean-verify sensor survey | sensing | The hardest open problem: prove a food surface is clean, every cycle, unattended (SF2). |
-| 3 | **Close the mouth during the bake** (decide ADR-0017) | safety | A stated H6 mitigation the geometry does not deliver. **Prerequisite closed:** ADR-0019 (2026-08-04) decided the press order — piston presses flush right after HYDRATE and holds through COOK — which collapses the open-mouth window from ~90 s to ~9 s (CHARGE+HYDRATE+PRESS). ADR-0017 itself is still **OPEN**: ~9 s of open mouth remains, the bread's own face becomes the seal (hygiene question), and the 2 mm effective platen contact ring is unresolved. **Blocks freezing the bore.** |
+| 3 | **Decide what belongs at the bore end** (ADR-0017) | safety | Reframed 2026-08-05 by ADR-0021, which removed the mouth die: the bore now ends in a plain open cylinder, so there is **no closure and no second cook platen** — the bake is one-sided and ADR-0007's energy/lethality numbers are optimistic. Exposure is bounded at ~9 s by ADR-0019, but the cheap "3 + 4" answer no longer adds up (4 is spent, 3 was never a platen answer). The live fork: a **closure at the face** (mechanism in public, must preserve the new 8 mm-proud delivery) vs an **anvil deeper in the bore** (mechanism in the clean zone, costs a transfer). **Blocks freezing the bore.** |
 
 ## Next (medium priority)
 | # | Item | Area | Why |
@@ -21,6 +21,15 @@ state belongs in GitHub Issues once the repo is public.
 | 8 | SF4 burn/pinch hardware | safety | Surface-temp cap from burn data; mouth presence + safety edge — the same sensor SF9 (ADR-0020) now also reads through withdrawal. Logic side of retract-with-a-hand-present is closed; this item is the hardware selection both SF4 and SF9 are waiting on. |
 
 ## Done
+- **Removed the mouth die** — **ADR-0021**, 2026-08-05. A Ø156 hardened ring standing 10 mm proud
+  of the wall, present since the first commit and never justified by an ADR. Of its three jobs:
+  rim-shearing duplicated ADR-0008's self-release (and made crumbs at the public face with
+  nowhere to go), the "second cook platen" was 2 mm of contact and never worked, and the hard
+  stop moved to drive-side end stops (HiveCell precedent) out of the food path. Removing it made
+  ADR-0001's flush wall literally true and turned the serving from **2 mm recessed inside a hole**
+  into **8 mm proud of a flat wall** — an accessibility fix nobody had been scoring for.
+  **Deliberately makes Now #3 harder**, and surfaced *delivery ergonomics* as a fifth criterion
+  ADR-0017's options had never been judged against.
 - **Retract mouth-clear guard / SF9** (was Now #4) — **ADR-0020**, 2026-08-04. The gap ADR-0018
   named: the piston retracted the instant a delivery ended, exactly when a hand is most likely
   to be at the mouth. `RETRACT` now holds position (no crushing force while stationary, same

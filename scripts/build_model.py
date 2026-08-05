@@ -17,9 +17,21 @@ The bore is round (no corners -> best hygiene + easiest full-perimeter scraping)
 whole food-contact story is a cylinder + a flat piston face (ADR-0001, ADR-0003).
 Piston is modelled in the PRESENT/flush pose (face at X=0); motion is a single +X
 translation applied by validate_kinematics.py / the twin, not baked into the geometry.
-Flush (X=0) is also the COOK pose, not just PRESENT's start point: the piston presses
-to flush right after HYDRATE and holds there through the bake (ADR-0019). CHARGE and
-HYDRATE happen with the piston retracted to X=chargeDepth instead, in the open chamber.
+
+X=0 IS THE HARD LIMIT OF FORWARD TRAVEL, and the bore has no ring or restriction at that
+end (ADR-0021 removed the mouth die). Consequences worth holding in mind when reading the
+geometry below:
+  * At X=0 the piston face is flush with the public wall and IS that wall -- ADR-0001's
+    "no separate door or shutter", now literally true rather than aspirational.
+  * The 8 mm flatbread rides on that face, so at full presentation it stands 8 mm PROUD of
+    the wall, out where a hand can take it. The only thing that ever crosses the wall plane
+    is soft bread; no rigid part protrudes, so there is no shear edge at the aperture.
+  * Nothing here enforces X>=0 -- the stop is a DRIVE-SIDE mechanical end stop in the
+    service plant (HiveCell precedent), deliberately kept out of the food path.
+  * The bake happens one piston-thickness back: the piston presses to X=flatbreadThk right
+    after HYDRATE and holds there through the cook (ADR-0019), so the dough occupies
+    X=flatbreadThk..0 inside the bore with its outer face flush to the street. CHARGE and
+    HYDRATE happen further back still, at X=chargeDepth, in the open chamber.
 """
 import FreeCAD as App
 import Part
@@ -39,8 +51,6 @@ PARAMS = [
 	                                "-- COOK happens flush, not here (ADR-0019)"),
 	("sterilizeStow",    "150 mm",  "extra retract so the face parks in the sterilize zone"),
 	("stroke",           "=chargeDepth + sterilizeStow", "max piston travel (present<->clean)"),
-	("dieThk",           "10 mm",   "mouth die/peeler ring thickness (proud of the wall)"),
-	("deliveryDia",      "=flatbreadDia - 4 mm", "die inner bore: shears/peels the bread rim"),
 	("sealLipThk",       "4 mm",    "scraper lip axial thickness"),
 	("sealLipCount",     "2",       "SF3 scraper lips per piston (face-side + rear)"),
 	("barrelLength",     "=chargeDepth + pistonLength + sterilizeStow", "fixed bore length"),
@@ -100,11 +110,15 @@ def build(doc, s):
 		seals = ring if seals is None else seals.fuse(ring)
 	_feature(doc, "ScraperSeals", seals)
 
-	# MouthDie -- fixed hardened peeler ring at the mouth (proud of the wall, X<0), inner
-	# = deliveryDia < pistonDia so it shears the flatbread rim off on ejection + is the
-	# front hard stop. Sits OUTSIDE the piston's X>=0 travel (no modelled interference).
-	die = _tube(bore + 2 * wall, s.deliveryDia.Value, s.dieThk.Value, -s.dieThk.Value)
-	_feature(doc, "MouthDie", die)
+	# NO MOUTH DIE (ADR-0021). There was a hardened Ø156 peeler/hard-stop ring here, standing
+	# 10 mm proud of the wall. It was removed: its rim-shearing duplicated ADR-0008's
+	# self-release (and made crumbs at the public face with nowhere to go), its "bore-end
+	# platen" role was only 2 mm of contact and never worked (ADR-0017), and its hard-stop role
+	# moved to drive-side end stops (HiveCell precedent) where it costs no food-contact
+	# geometry. The bore is now a plain open cylinder: the piston face stops flush at X=0 and
+	# IS the public wall (ADR-0001, finally literally true), and the 8 mm flatbread sitting on
+	# that face stands 8 mm PROUD of the wall where a person can take it -- rather than
+	# recessed 2 mm inside a ring. Nothing rigid ever crosses X=0.
 
 	# HydrationRing -- fixed jet ring just inside the mouth: injects water+oil into the
 	# dry charge to hydrate + mix WITHOUT a blade (ADR-0006). Space claim.
@@ -150,6 +164,12 @@ def report(doc, s):
 	# sanity: piston fits inside the bore with clearance
 	gap = (bore - s.pistonDia.Value) / 2.0
 	print(f"running gap check  : {gap:8.2f} mm/side  {'OK' if abs(gap - s.runningClearance.Value) < 1e-6 else 'MISMATCH'}")
+	# ADR-0021: nothing rigid may cross the public wall plane (X=0). The only thing that
+	# protrudes is the bread itself, riding on a face that stops flush.
+	solid = min(o.Shape.BoundBox.XMin for o in doc.Objects if o.TypeId == "Part::Feature")
+	print(f"protrusion check   : {solid:8.2f} mm  min X of any solid  "
+	      f"{'OK (nothing past the wall)' if solid >= -1e-6 else 'PROTRUDES INTO THE STREET'}")
+	print(f"bread stands proud : {s.flatbreadThk.Value:8.1f} mm  at full presentation (grab depth)")
 	print(f"parts              : {', '.join(o.Name for o in doc.Objects if o.TypeId == 'Part::Feature')}")
 
 

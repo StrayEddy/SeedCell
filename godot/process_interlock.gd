@@ -289,7 +289,7 @@ func step(delta: float) -> void:
 				elif collection.expired():
 					# Nobody came. The batch has sat in public air at an open mouth and may
 					# have been handled, so it is condemned rather than re-offered or left
-					# lying at the die. Withdrawing it back through the bore is safe only
+					# lying at the mouth. Withdrawing it back through the bore is safe only
 					# because DIVERT is always followed by CLEAN + CLEAN_VERIFY before any
 					# next charge -- the same gate that lets the machine bake at all.
 					_batch_condemned = true
