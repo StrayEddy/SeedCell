@@ -1,3 +1,12 @@
+<!-- BOARD
+url: https://claude.ai/code/artifact/95ab8c92-9521-4003-a6eb-bbed1aa530a9
+headline: On hold since 2026-08-05; the residue/release bench test is the master variable blocking SF2/SF3, and 3 doc edits sit uncommitted.
+now:
+- P0 1 residue + release bench test (~$150-250, `docs/residue_bench_test.md`, ADR-0011) — the master variable; gates SF2, SF3, surface + formula
+- P1 commit the 3 uncommitted files in the working tree (`docs/DECISIONS.md`, `docs/ROADMAP.md`, `docs/SAFETY.md`; site caption / ADR-0021 follow-up, 2026-08-05)
+review:
+-->
+
 # SeedCell — TODO
 
 **Status: on hold** since 2026-08-05. Narrative + priorities live in `docs/ROADMAP.md`. This file is the actionable checklist the desktop board reads — keep the two in sync.

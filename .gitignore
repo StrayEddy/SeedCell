@@ -28,3 +28,5 @@ __pycache__/
 /blender/seedcell.blend
 /blender/models/
 /blender/hdri/
+.board.html
+.board.hash
