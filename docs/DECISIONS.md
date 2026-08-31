@@ -557,11 +557,9 @@ uncollected batch left presented at the mouth — that needs a collection sensor
 
 ---
 
-## ADR-0017 — Nothing occupies the bore end: no closure during the bake, and no second platen
-**Date:** 2026-08-04 (reframed 2026-08-05 after ADR-0021)
-**Status:** **OPEN — no decision made.** Recorded so the contradiction is tracked rather than
-rediscovered. (First entry in this log that is not `Accepted`; the status field is doing real
-work here.) **Blocks freezing the bore geometry.**
+## ADR-0017 — Retractable heated anvil, service-side, at ≥850 mm depth: the second platen
+**Date:** 2026-08-04 (reframed 2026-08-05 after ADR-0021; decided 2026-08-11)
+**Status:** Accepted.
 
 > **Read the second addendum first (2026-08-05).** ADR-0021 removed the mouth die, so the
 > geometry the body of this ADR argues about no longer exists. The *problem* is unchanged and
@@ -705,6 +703,71 @@ scored on hygiene, hazard, and cost, and none of them asked this. The die's remo
 the delivery had been ergonomically bad for the whole life of the project without anyone scoring
 it. Any candidate must now be judged on the reach it leaves the person, not only on what it does
 for H6.
+
+### Decision addendum, 2026-08-11 — option 2: retractable heated anvil, service-side
+
+**Decision: option 2.** A retractable heated anvil sits inside the bore, on the service side,
+at a depth of **≥ 850 mm from the public face**. The piston presses dough against it to bake;
+after baking the anvil retracts (into the service/clean zone, never exposed to the public);
+the piston then advances the full remaining stroke to deliver the bread 8 mm proud of the wall.
+
+**Why 850 mm.** ISO 13857 (safety distances — reach through openings) Table 2: for an opening
+through which the whole arm can pass (opening dimension > 120 mm), the safety distance to any
+hazard zone is 850 mm. The bore is Ø164, well above 120 mm, so a person standing at the wall
+can reach 850 mm in. The anvil — a 230 °C surface — must be beyond that distance.
+
+**Why this option and not option 1 (closure at the face).**
+- ADR-0001's "no door or shutter at the public face" is a load-bearing architectural choice,
+  not an aesthetic one: any mechanism at X=0 is in the food path, must be cleaned every cycle,
+  is exposed to vandalism, and re-introduces the exact complexity the syringe topology exists
+  to avoid. That cost did not change.
+- Option 2's previously listed cost — "breaks one chamber, one delivery surface" — is the
+  honest cost, but it is the smaller one. The cleaning story for the anvil face is no harder
+  than cleaning the piston face: it is inside the sealed service volume, reached by the same
+  steam/heat cycle (ADR-0010), and it never crosses the public face.
+- The 850 mm depth requirement means the anvil is **unreachable from the street by any person**,
+  which is a stronger H6 mitigation than a closure at the face: there is nothing to bypass,
+  nothing to tamper with, and the hot surface is geometrically inaccessible.
+- ADR-0001 is preserved: the bore still ends in a plain open cylinder at X=0 (per ADR-0021),
+  with no mechanism at the public face. The bread — not a mechanism — is the only thing that
+  protrudes.
+
+**What this closes.**
+- ADR-0007's two-sided conduction bake is restored: piston face (hot) + anvil face (hot).
+- H6's stated mitigation ("mouth sealed except during PRESENT") is now geometrically true:
+  during COOK the dough disc plugs the bore mouth (ADR-0019), and the hot anvil is ≥850 mm in.
+- The bore-geometry block is lifted; the bore can now be frozen once the anvil retraction
+  mechanism and the total bore depth are decided.
+
+**What this opens (required follow-up work).**
+- **Bore length.** The bake position is at ≥ 850 mm depth (anvil face). The piston must travel
+  from there to X=0 (wall) for delivery — a stroke of ≥ 850 mm. Total bore depth = bake depth +
+  piston body length + actuator clearance. This must be checked against the assumed wall depth.
+- **Anvil retraction mechanism.** Not decided here: lateral slide, axial retraction toward the
+  service plant, or hinge. Whichever is chosen must keep the anvil inside the sealed service
+  volume at all times and must not create a new pinch geometry in the bore.
+- **Anvil as a food-contact surface.** The anvil face contacts dough every cycle and must fit
+  into SF2/SF3's scrape + steam + heat-sterilize + dry cycle (ADR-0010). Its geometry must be
+  compatible with the piston scraper lips (SF3) passing over it, or it must retract fully before
+  the cleaning stroke begins.
+- **Piston temperature at delivery.** The piston face is hot during baking; it advances through
+  air to deliver. SF4's burn guard already tracks the accessible bread-surface temperature — the
+  bread is what a person touches, not the piston face (which is at the wall plane, behind the
+  bread). This is an accepted, tracked risk, not an oversight. If thermal modelling shows the
+  bread face is too hot at delivery, the fix is a longer advance dwell or a piston-face cool-down
+  step before PRESENT — both are interlock states, not geometry.
+- **`godot/process_interlock.gd`** needs two new interlock states: BAKE (press + cook against
+  the closed anvil) and OPEN_ANVIL (anvil retracts before the piston advances to PRESENT).
+- **`scripts/build_model.py`** needs the anvil geometry and a `bakeDepth` parameter (≥ 850 mm).
+- **`docs/cell_anatomy.svg`** needs to be redrawn showing the bake pose (piston pressed against
+  anvil at depth) and the delivery pose (anvil gone, piston at X=0, bread proud).
+- **`docs/SAFETY.md`** H6 mitigation must be updated: "bore depth ≥ ISO 13857 reach distance
+  (850 mm for Ø164 opening); no mechanism at public face (ADR-0001/ADR-0021)".
+- **Component tree** (bottom of this file) must be updated to add the anvil and its drive.
+
+**Rejected alternative: option 1 (heated closure at the face).** See above. The cost —
+a mechanism in the food path on the public face — is disqualifying given ADR-0001. Not
+revisited unless the bore-depth constraint turns out to be infeasible for the wall geometry.
 
 ---
 
@@ -1079,19 +1142,23 @@ hero render is unaffected — it is built from primitives and never modelled the
 
 ## Component tree (one cell) — reference for ADR-0001
 
-1. Structure/enclosure: fixed heated `CookBarrel` (bore), wall-interface flange & trim,
-   armored public face. (No mouth die since ADR-0021; forward travel is stopped drive-side.)
-2. Motion/actuation: piston linear drive, bore-as-guide (no external rails, HiveCell
-   ADR-0007 lesson), actuator-to-piston coupling, mechanical hard stops, passive flush latch.
+1. Structure/enclosure: fixed heated `CookBarrel` (bore, ≥ 850 mm deep per ADR-0017), wall-interface
+   flange & trim, armored public face. (No mouth die since ADR-0021; forward travel is stopped
+   drive-side.)
+2. Motion/actuation: piston linear drive, bore-as-guide (no external rails, HiveCell ADR-0007
+   lesson), actuator-to-piston coupling, mechanical hard stops, passive flush latch; **anvil drive**
+   (retraction mechanism TBD — ADR-0017).
 3. Food path (kept minimal): `DryStorage` hoppers + dosers, oil reservoir, `HydrationRing`
-   (injection mix, ADR-0006), the bore + piston face (form + cook), `WasteChute` (divert).
+   (injection mix, ADR-0006), the bore + piston face + **retractable heated anvil** (form + cook,
+   ADR-0017), `WasteChute` (divert).
 4. Sensing/safety/control: SF1 diverse lethality probes (2× core thermocouple + IR pyrometer
    + F-value integrator, ADR-0009), SF6 hopper spoilage sensors, piston position + limits,
-   mouth presence + safety edge (SF4), delivered-surface thermometer (burn guard), rated
-   safety controller.
+   **anvil position + limits**, mouth presence + safety edge (SF4), delivered-surface thermometer
+   (burn guard), rated safety controller.
 5. Services: power, water in + wash drain, `SterilizeRing` (steam/hot-water), `HotAirKnife`
-   (dry), heaters (griddle + face), status beacon (SF5).
+   (dry), heaters (griddle + face + **anvil face**), status beacon (SF5).
 6. Cleaning subsystem (ADR-0010): piston scraper lips (SF3) + SterilizeRing + HotAirKnife +
-   reused bake heat; all service-side; nothing on the public face.
+   reused bake heat; all service-side; nothing on the public face. **Anvil face must retract
+   before the cleaning stroke begins** (ADR-0017 open item).
 7. User interface: exterior availability/status beacon (SF5), privacy-preserving ration
    camera (ADR-0013), delivery aperture (the mouth), no buttons/handles.

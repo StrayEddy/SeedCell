@@ -26,7 +26,7 @@ Risk = Severity (1-4) × Likelihood (1-4). Severity 4 = serious/widespread illne
 | H3 | Spoiled / wet ingredient served | Damp hopper grows mould; spoiled oil | 3 | 2 | 6 | SF6 spoilage lockout (moisture/temp); dry storage (ADR-0012) |
 | H4 | Burn at the mouth | Hot piston face / just-baked bread scalds a hand/mouth | 3 | 3 | 9 | SF4 delivered-surface temperature cap; brief present; edge geometry |
 | H5 | Pinch / crush at the mouth | Hand reaches in as the piston presents, OR is still at the mouth as the piston withdraws after a delivery | 3 | 2 | 6 | SF4 force cap + safety edge → abort present; **SF9** mouth-clear guard → hold position (never withdraw across a hand), bounded, then alarm (ADR-0020); SF5 slow final approach |
-| H6 | Contaminant ingress / tampering | Foreign object, fluid, or vandalism pushed into the mouth | 4 | 2? | 8? | Mouth flush + sealed except during present; presence gate; inspect-on-open. **⚠ This mitigation does not currently hold — see ADR-0017. The L=2 score assumed a sealed mouth; it is optimistic and must be re-scored once ADR-0017 is decided.** The *delivery* window is bounded (SF8, ADR-0018); the *bake* window is narrower than it was — ADR-0019 (2026-08-04) decided the piston presses flush right after HYDRATE, so the open-mouth exposure is now CHARGE+HYDRATE+PRESS (~9 s default), not the full ~90 s cook — but it is still open, not sealed, so ADR-0017 remains undecided. |
+| H6 | Contaminant ingress / tampering | Foreign object, fluid, or vandalism pushed into the mouth | 4 | 2 | 8 | Bore depth ≥ 850 mm (ISO 13857 whole-arm reach distance for Ø164 opening) — the heated anvil is geometrically unreachable from the street (ADR-0017); dough disc plugs the mouth for the full ~90 s bake (ADR-0019 presses right after HYDRATE, ~9 s open window for CHARGE+HYDRATE+PRESS only); no mechanism at the public face (ADR-0001/ADR-0021); presence gate + inspect-on-open. L=2 score confirmed: the "sealed mouth" assumption now holds geometrically. |
 | H7 | Cleaning-chemical residue on food surface | A disinfectant (if used) left on the piston face | 4 | 1 | 4 | ADR-0010 thermal+steam, NO per-cycle chemical; if added, a dose+rinse verify + fail-safe |
 | H8 | Foreign body from mechanism wear | Coating flake / seal fragment ends up in the bread | 3 | 2 | 6 | Food-grade materials; SF3 wear budget; inspection; frangible-part exclusion from food path |
 | H9 | Allergen exposure | Wheat/legume allergens inherent to the formula | 3 | 3 | 9 | Clear fixed labelling at the machine; formula is fixed + published (facility-level) |
@@ -174,24 +174,12 @@ of the SF2 clean-verify (F5) is a commissioning requirement.
 does not choose them.
 
 ## Open items
-- **⚠ Mouth is not sealed during the bake (H6, ADR-0017) — OPEN, blocks freezing the bore.**
-  Found by drawing the CAD 1:1 (`docs/cell_anatomy.svg`), and **widened by ADR-0021**
-  (2026-08-05), which removed the mouth die: the bore now ends in a plain open Ø164 cylinder,
-  so there is *definitively nothing* at that end — no closure and **no second cook platen**.
-  Two consequences, both open:
-  - **Exposure.** The piston sits retracted 60 mm through CHARGE → HYDRATE, then **presses
-    flush and holds through COOK (ADR-0019)** — so the open-mouth window is ~9 s, not the full
-    ~90 s bake. But it is still a real opening, and the dough's own outer face is what faces
-    the street during the cook, not a mechanical seal. H6's stated mitigation ("mouth flush +
-    sealed except during present") is a mitigation the geometry does not deliver, which is a
-    worse class of problem than an unimplemented item; its risk score stays optimistic until
-    this is resolved.
-  - **The bake is one-sided.** ADR-0007 specifies conduction between *two* hot platens. Only
-    the piston face exists. The lethality and energy figures downstream of ADR-0007 assume
-    two-sided heating, so they are optimistic in the same direction as H6's score.
-
-  Resolution options are re-scored against the post-ADR-0021 geometry in **ADR-0017**'s second
-  addendum; the decision is not yet made.
+- **ADR-0017 decided (2026-08-11) — bore depth and anvil retraction not yet in CAD/twin.**
+  H6 and the one-sided bake are resolved architecturally: a retractable heated anvil sits at
+  ≥ 850 mm depth (ISO 13857 whole-arm reach, Ø164 opening); the bore cannot be frozen until
+  `build_model.py` implements the anvil geometry and `bakeDepth` parameter, `cell_anatomy.svg`
+  is redrawn with the bake pose, and `process_interlock.gd` gains the BAKE + OPEN_ANVIL states.
+  The anvil retraction mechanism and bore total depth remain to be decided (ADR-0017 open items).
 - **SF1 real sensing (ADR-0009/0015):** the F-value target is set (F₇₀ ≥ 13.9 s, 7-log
   *Salmonella*) — what remains is hardware and proof: choose probe parts; validate that they
   read the true geometric **coldest point** (get this wrong and the integral measures the

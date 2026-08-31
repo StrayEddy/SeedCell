@@ -1,9 +1,8 @@
 <!-- BOARD
 url: https://claude.ai/code/artifact/95ab8c92-9521-4003-a6eb-bbed1aa530a9
-headline: On hold since 2026-08-05; the residue/release bench test is the master variable blocking SF2/SF3, and 3 doc edits sit uncommitted.
+headline: On hold since 2026-08-05; the residue/release bench test is the master variable blocking SF2/SF3. ADR-0017 is decided and committed, so the bore geometry is no longer blocked.
 now:
 - P0 1 residue + release bench test (~$150-250, `docs/residue_bench_test.md`, ADR-0011) — the master variable; gates SF2, SF3, surface + formula
-- P1 commit the 3 uncommitted files in the working tree (`docs/DECISIONS.md`, `docs/ROADMAP.md`, `docs/SAFETY.md`; site caption / ADR-0021 follow-up, 2026-08-05)
 review:
 -->
 
@@ -21,7 +20,7 @@ review:
 - [ ] 6 Low-adhesion coating durability — PTFE/ceramic under scrape + 230 °C + steam
 - [ ] 7 Export pipeline → twin/render (`export_godot.py` + visual `process_demo` scene, ADR-0014)
 - [ ] 8 SF4 burn/pinch hardware — surface-temp cap, mouth presence + safety edge
-- [ ] Commit the 3 uncommitted files in the working tree (site caption / ADR-0021 follow-up, 2026-08-05)
+- [x] Commit the 3 uncommitted files in the working tree (site caption / ADR-0021 follow-up, 2026-08-05)
 
 ## Hardware / context gated
 - [ ] 9 Single-chamber cook prototype (proves ADR-0006/0007)

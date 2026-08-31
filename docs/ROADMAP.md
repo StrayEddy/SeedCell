@@ -10,7 +10,7 @@ state belongs in GitHub Issues once the repo is public.
 |---|------|------|-----|
 | 1 | Residue + release bench test | food/hygiene | The master variable (ADR-0011); gates SF2, SF3, the surface + formula. See below. |
 | 2 | Clean-verify sensor survey | sensing | The hardest open problem: prove a food surface is clean, every cycle, unattended (SF2). |
-| 3 | **Decide what belongs at the bore end** (ADR-0017) | safety | Reframed 2026-08-05 by ADR-0021, which removed the mouth die: the bore now ends in a plain open cylinder, so there is **no closure and no second cook platen** — the bake is one-sided and ADR-0007's energy/lethality numbers are optimistic. Exposure is bounded at ~9 s by ADR-0019, but the cheap "3 + 4" answer no longer adds up (4 is spent, 3 was never a platen answer). The live fork: a **closure at the face** (mechanism in public, must preserve the new 8 mm-proud delivery) vs an **anvil deeper in the bore** (mechanism in the clean zone, costs a transfer). **Blocks freezing the bore.** |
+| 3 | **Implement ADR-0017 in CAD + twin** (anvil + bore depth) | safety/sim | ADR-0017 decided 2026-08-11: retractable heated anvil at ≥ 850 mm depth. Bore geometry not yet frozen. Needs `bakeDepth` in `build_model.py`, BAKE + OPEN_ANVIL states in `process_interlock.gd`, redrawn `cell_anatomy.svg`, and a decided anvil retraction mechanism. |
 
 ## Next (medium priority)
 | # | Item | Area | Why |
@@ -21,6 +21,11 @@ state belongs in GitHub Issues once the repo is public.
 | 8 | SF4 burn/pinch hardware | safety | Surface-temp cap from burn data; mouth presence + safety edge — the same sensor SF9 (ADR-0020) now also reads through withdrawal. Logic side of retract-with-a-hand-present is closed; this item is the hardware selection both SF4 and SF9 are waiting on. |
 
 ## Done
+- **Bore end: retractable heated anvil at ≥ 850 mm depth** — **ADR-0017**, 2026-08-11.
+  The long-open design fork (closure at the face vs anvil in the bore) resolved: option 2,
+  anvil in the bore. ISO 13857 whole-arm reach distance for a Ø164 opening is 850 mm —
+  the hot anvil is geometrically unreachable from the street. ADR-0007's two-sided bake is
+  restored; H6's mouth-sealed mitigation now holds. Implementation remains (Now #3 above).
 - **Removed the mouth die** — **ADR-0021**, 2026-08-05. A Ø156 hardened ring standing 10 mm proud
   of the wall, present since the first commit and never justified by an ADR. Of its three jobs:
   rim-shearing duplicated ADR-0008's self-release (and made crumbs at the public face with
